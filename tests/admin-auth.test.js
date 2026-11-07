@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 
 describe("Admin Authentication & Security Suite", () => {
   const BASE_URL = process.env.TEST_BASE_URL || "http://localhost:3001";
+  let adminSessionCookie = "";
 
   test("GET /api/v1/auth/admin returns 401 when no session cookie is provided", async () => {
     try {
@@ -11,7 +12,6 @@ describe("Admin Authentication & Security Suite", () => {
       const json = await res.json();
       assert.equal(json.authenticated, false);
     } catch (e) {
-      // Skip if local port 3001 isn't running yet in test harness
       if (e.code === "ECONNREFUSED") return;
       throw e;
     }
@@ -49,6 +49,7 @@ describe("Admin Authentication & Security Suite", () => {
       // Verify Set-Cookie header contains jobeelanka_admin_session
       const cookieHeader = res.headers.get("set-cookie");
       assert.ok(cookieHeader && cookieHeader.includes("jobeelanka_admin_session="));
+      adminSessionCookie = cookieHeader.split(";")[0];
     } catch (e) {
       if (e.code === "ECONNREFUSED") return;
       throw e;
@@ -67,6 +68,16 @@ describe("Admin Authentication & Security Suite", () => {
       assert.equal(json.success, true);
       assert.equal(json.user.email, "anasbikes1992@gmail.com");
       assert.equal(json.user.role, "SUPER_ADMIN");
+    } catch (e) {
+      if (e.code === "ECONNREFUSED") return;
+      throw e;
+    }
+  });
+
+  test("GET /api/v1/admin/staff requires valid admin session", async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/api/v1/admin/staff`);
+      assert.equal(res.status, 401);
     } catch (e) {
       if (e.code === "ECONNREFUSED") return;
       throw e;

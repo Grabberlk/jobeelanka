@@ -90,3 +90,4 @@ export async function DELETE() {
   res.cookies.delete(COOKIE_NAME);
   return res;
 }
+

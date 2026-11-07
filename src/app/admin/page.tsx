@@ -44,13 +44,19 @@ import {
   LogOut,
   KeyRound,
   Eye,
-  EyeOff
+  EyeOff,
+  Menu,
+  X,
+  UserPlus
 } from "lucide-react";
 import { formatCurrency, formatDateRelative, buildWhatsAppUrl } from "@/lib/utils";
 
 type AdminTab = "JOBS" | "EMPLOYERS" | "FEEDS" | "APPLICANTS" | "QUEUE" | "STAFF" | "SYSTEM";
 
 export default function AdminPortalPage() {
+  // Mobile Left Sidebar State
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
   // Admin Authentication & Session State
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState<boolean>(true);
@@ -70,6 +76,24 @@ export default function AdminPortalPage() {
   const [currentUser, setCurrentUser] = useState<StaffUser>(SEED_ADMIN_AND_STAFF[0]);
   const [activeTab, setActiveTab] = useState<AdminTab>("JOBS");
   const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
+
+  // Staff Management State
+  const [staffList, setStaffList] = useState<StaffUser[]>(SEED_ADMIN_AND_STAFF);
+  const [isStaffModalOpen, setIsStaffModalOpen] = useState(false);
+  const [isSubmittingStaff, setIsSubmittingStaff] = useState(false);
+  const [newStaffData, setNewStaffData] = useState({
+    name: "",
+    email: "",
+    role: "MODERATOR_STAFF" as StaffUser["role"],
+    department: "Job Moderation & Quality Assurance",
+    permissions: [
+      "REVIEW_VACANCIES",
+      "APPROVE_JOBS",
+      "REJECT_JOBS",
+      "EDIT_TAXONOMY",
+      "TRIAGE_REPORTS",
+    ],
+  });
 
   // Data Stores
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -193,15 +217,78 @@ export default function AdminPortalPage() {
     }
   };
 
+  // Staff CRUD Handlers
+  const handleSaveStaff = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newStaffData.name || !newStaffData.email) {
+      showToast("Name and email are required", "error");
+      return;
+    }
+
+    setIsSubmittingStaff(true);
+    try {
+      const res = await fetch("/api/v1/admin/staff", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newStaffData),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        showToast(data.error || "Failed to create staff member", "error");
+        return;
+      }
+      setStaffList(data.list);
+      showToast(`Staff member "${data.data.name}" added successfully!`, "success");
+      setIsStaffModalOpen(false);
+      setNewStaffData({
+        name: "",
+        email: "",
+        role: "MODERATOR_STAFF",
+        department: "Job Moderation & Quality Assurance",
+        permissions: [
+          "REVIEW_VACANCIES",
+          "APPROVE_JOBS",
+          "REJECT_JOBS",
+          "EDIT_TAXONOMY",
+          "TRIAGE_REPORTS",
+        ],
+      });
+    } catch {
+      showToast("Network error creating staff member", "error");
+    } finally {
+      setIsSubmittingStaff(false);
+    }
+  };
+
+  const handleDeleteStaff = async (staffId: string, staffName: string) => {
+    if (!confirm(`Are you sure you want to remove staff member "${staffName}"?`)) return;
+
+    try {
+      const res = await fetch(`/api/v1/admin/staff?id=${staffId}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        showToast(data.error || "Failed to remove staff member", "error");
+        return;
+      }
+      setStaffList(data.list);
+      showToast(`Staff member "${staffName}" removed.`, "success");
+    } catch {
+      showToast("Network error removing staff member", "error");
+    }
+  };
+
   // Fetch all initial data
   const loadAllData = async () => {
     setIsLoading(true);
     try {
-      const [jobsRes, empsRes, feedsRes, appsRes] = await Promise.all([
+      const [jobsRes, empsRes, feedsRes, appsRes, staffRes] = await Promise.all([
         fetch("/api/v1/jobs?includeInactive=true").then((r) => r.json()),
         fetch("/api/v1/employers").then((r) => r.json()),
         fetch("/api/v1/feeds").then((r) => r.json()),
         fetch("/api/v1/applications").then((r) => r.json()),
+        fetch("/api/v1/admin/staff").then((r) => r.json()).catch(() => ({ data: SEED_ADMIN_AND_STAFF })),
       ]);
 
       if (jobsRes.data) setJobs(jobsRes.data);
@@ -209,6 +296,7 @@ export default function AdminPortalPage() {
       if (feedsRes.data?.feeds) setFeeds(feedsRes.data.feeds);
       if (feedsRes.data?.logs) setSyncLogs(feedsRes.data.logs);
       if (appsRes.data) setApplications(appsRes.data);
+      if (staffRes.data) setStaffList(staffRes.data);
     } catch (err) {
       console.error("Failed to load admin data:", err);
     } finally {
@@ -709,7 +797,7 @@ export default function AdminPortalPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 space-y-6">
+    <div className="min-h-screen bg-slate-100/70 dark:bg-slate-950 flex flex-col md:flex-row text-slate-800 dark:text-slate-100">
       {/* Toast Notification */}
       {notification && (
         <div
@@ -726,157 +814,382 @@ export default function AdminPortalPage() {
         </div>
       )}
 
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Navigation & Header */}
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-slate-900 text-white rounded-3xl p-6 sm:p-8 border border-slate-800 shadow-xl">
-          <div className="space-y-1">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-emerald-400 hover:text-emerald-300 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span>Back to JobeeLanka Public Directory</span>
-            </Link>
-            <div className="flex items-center gap-2.5">
-              <ShieldAlert className="w-7 h-7 text-emerald-400" />
-              <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-                JobeeLanka Governance Cockpit
-              </h1>
-            </div>
-            <p className="text-xs sm:text-sm text-slate-300">
-              Master control center for Jobs, Employers, Ingested RSS Leads, and Candidate Direct Referral Routing.
-            </p>
+      {/* Mobile Top Navigation Bar with Drawer Toggle */}
+      <div className="md:hidden flex items-center justify-between px-4 py-3.5 bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-40">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+            <ShieldAlert className="w-4 h-4" />
           </div>
+          <div>
+            <span className="font-extrabold text-sm tracking-tight">JobeeLanka</span>
+            <span className="ml-1 text-[10px] font-mono font-bold bg-emerald-950 text-emerald-400 px-1 py-0.2 rounded border border-emerald-800/40">
+              ADMIN
+            </span>
+          </div>
+        </div>
+        <button
+          onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+          className="p-2 rounded-xl bg-slate-800 text-slate-300 hover:text-white"
+          aria-label="Toggle admin sidebar"
+        >
+          {mobileSidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
+      </div>
 
-          {/* Authenticated Super Admin Session & Sign Out */}
-          <div className="bg-slate-800/90 p-3 sm:p-4 rounded-2xl border border-slate-700/80 flex items-center gap-3">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-sm shrink-0">
-                {(authenticatedAdmin?.name || currentUser.name).charAt(0).toUpperCase()}
+      {/* =========================================================================
+          LEFT SIDEBAR (DESKTOP FIXED/STICKY + MOBILE DRAWER)
+      ========================================================================= */}
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-slate-900 text-slate-300 flex flex-col border-r border-slate-800 shadow-2xl transition-transform duration-300 ease-out md:static md:translate-x-0 shrink-0 ${
+          mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        }`}
+      >
+        {/* Sidebar Brand Header */}
+        <div className="p-5 border-b border-slate-800 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-inner shrink-0">
+              <ShieldAlert className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="font-extrabold text-sm text-white tracking-tight flex items-center gap-1.5">
+                <span>JobeeLanka</span>
+                <span className="text-[9px] px-1.5 py-0.5 rounded font-mono font-bold bg-emerald-950 text-emerald-400 border border-emerald-800/50">
+                  COCKPIT
+                </span>
               </div>
-              <div>
-                <div className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <span>{authenticatedAdmin?.name || currentUser.name}</span>
-                  <span className="text-[10px] bg-emerald-950 border border-emerald-800/60 text-emerald-300 font-bold px-1.5 py-0.5 rounded-md">
-                    SUPER_ADMIN
-                  </span>
-                </div>
-                <div className="text-[11px] text-slate-400 font-mono">
-                  {authenticatedAdmin?.email || currentUser.email}
-                </div>
-              </div>
+              <div className="text-[11px] text-slate-400">Governance & Directory</div>
+            </div>
+          </div>
+          <button
+            onClick={() => setMobileSidebarOpen(false)}
+            className="md:hidden p-1.5 rounded-lg text-slate-400 hover:text-white"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+
+        {/* Sidebar Nav Items */}
+        <div className="flex-1 overflow-y-auto px-3.5 py-4 space-y-6">
+          {/* Section: DIRECTORY CATALOGS */}
+          <div className="space-y-1">
+            <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+              Catalogs & Ingestion
             </div>
 
             <button
-              onClick={handleLogout}
-              className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 transition-colors"
-              title="Sign Out of Administration"
+              onClick={() => { setActiveTab("JOBS"); setMobileSidebarOpen(false); }}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                activeTab === "JOBS"
+                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-950/40"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+              }`}
             >
-              <LogOut className="w-3.5 h-3.5" />
-              <span>Sign Out</span>
+              <div className="flex items-center gap-2.5">
+                <Briefcase className="w-4 h-4" />
+                <span>Jobs Directory</span>
+              </div>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
+                activeTab === "JOBS" ? "bg-white/20 text-white" : "bg-slate-800 text-slate-400"
+              }`}>
+                {jobs.length}
+              </span>
             </button>
+
+            <button
+              onClick={() => { setActiveTab("EMPLOYERS"); setMobileSidebarOpen(false); }}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                activeTab === "EMPLOYERS"
+                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-950/40"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Building className="w-4 h-4" />
+                <span>Employers</span>
+              </div>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
+                activeTab === "EMPLOYERS" ? "bg-white/20 text-white" : "bg-slate-800 text-slate-400"
+              }`}>
+                {employers.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => { setActiveTab("FEEDS"); setMobileSidebarOpen(false); }}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                activeTab === "FEEDS"
+                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-950/40"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Rss className="w-4 h-4 text-amber-400" />
+                <span>RSS & Lead Ingestion</span>
+              </div>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
+                activeTab === "FEEDS" ? "bg-white/20 text-white" : "bg-slate-800 text-slate-400"
+              }`}>
+                {feeds.length}
+              </span>
+            </button>
+          </div>
+
+          {/* Section: OPERATIONS & CANDIDATES */}
+          <div className="space-y-1">
+            <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+              Operations & Triage
+            </div>
+
+            <button
+              onClick={() => { setActiveTab("APPLICANTS"); setMobileSidebarOpen(false); }}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                activeTab === "APPLICANTS"
+                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-950/40"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Users className="w-4 h-4 text-blue-400" />
+                <span>Referrals CRM</span>
+              </div>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
+                activeTab === "APPLICANTS" ? "bg-white/20 text-white" : "bg-slate-800 text-slate-400"
+              }`}>
+                {applications.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => { setActiveTab("QUEUE"); setMobileSidebarOpen(false); }}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                activeTab === "QUEUE"
+                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-950/40"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <ShieldAlert className="w-4 h-4 text-rose-400" />
+                <span>Moderation Queue</span>
+              </div>
+              {queue.filter((q) => q.status === "PENDING" || q.status === "FLAGGED").length > 0 && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full font-mono font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30">
+                  {queue.filter((q) => q.status === "PENDING" || q.status === "FLAGGED").length}
+                </span>
+              )}
+            </button>
+          </div>
+
+          {/* Section: GOVERNANCE & TELEMETRY */}
+          <div className="space-y-1">
+            <div className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-2">
+              Governance & Admin
+            </div>
+
+            <button
+              onClick={() => { setActiveTab("STAFF"); setMobileSidebarOpen(false); }}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                activeTab === "STAFF"
+                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-950/40"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <UserPlus className="w-4 h-4 text-emerald-400" />
+                <span>Staff & Roles</span>
+              </div>
+              <span className={`text-[10px] px-2 py-0.5 rounded-full font-mono ${
+                activeTab === "STAFF" ? "bg-white/20 text-white" : "bg-slate-800 text-slate-400"
+              }`}>
+                {staffList.length}
+              </span>
+            </button>
+
+            <button
+              onClick={() => { setActiveTab("SYSTEM"); setMobileSidebarOpen(false); }}
+              className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                activeTab === "SYSTEM"
+                  ? "bg-emerald-600 text-white shadow-md shadow-emerald-950/40"
+                  : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Activity className="w-4 h-4" />
+                <span>System Telemetry</span>
+              </div>
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            </button>
+
+            <Link
+              href="/swagger"
+              className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800/60 transition-all"
+            >
+              <div className="flex items-center gap-2.5">
+                <BookOpen className="w-4 h-4" />
+                <span>Swagger API Spec</span>
+              </div>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-500" />
+            </Link>
           </div>
         </div>
 
-        {/* Tab Navigation Menu */}
-        <div className="flex items-center gap-2 border-b border-slate-200 dark:border-slate-800 pb-2 overflow-x-auto scrollbar-none">
-          <button
-            onClick={() => setActiveTab("JOBS")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
-              activeTab === "JOBS"
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            }`}
-          >
-            <Briefcase className="w-3.5 h-3.5" />
-            <span>Jobs ({jobs.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("EMPLOYERS")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
-              activeTab === "EMPLOYERS"
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            }`}
-          >
-            <Building className="w-3.5 h-3.5" />
-            <span>Employers ({employers.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("FEEDS")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
-              activeTab === "FEEDS"
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            }`}
-          >
-            <Rss className="w-3.5 h-3.5 text-amber-500" />
-            <span>RSS & Ingestion ({feeds.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("APPLICANTS")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
-              activeTab === "APPLICANTS"
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            }`}
-          >
-            <Users className="w-3.5 h-3.5 text-blue-500" />
-            <span>Referrals CRM ({applications.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("QUEUE")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
-              activeTab === "QUEUE"
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            }`}
-          >
-            <ShieldAlert className="w-3.5 h-3.5 text-rose-500" />
-            <span>Moderation ({queue.filter((q) => q.status === "PENDING" || q.status === "FLAGGED").length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("STAFF")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
-              activeTab === "STAFF"
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            }`}
-          >
-            <Users className="w-3.5 h-3.5" />
-            <span>Staff Roles</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab("SYSTEM")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shrink-0 transition-all ${
-              activeTab === "SYSTEM"
-                ? "bg-emerald-600 text-white shadow-sm"
-                : "bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
-            }`}
-          >
-            <Activity className="w-3.5 h-3.5" />
-            <span>System Health</span>
-          </button>
+        {/* Sidebar Footer: Super Admin Profile & Exit */}
+        <div className="p-4 border-t border-slate-800 bg-slate-950/80 space-y-3">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl bg-emerald-600/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-xs shrink-0">
+              {(authenticatedAdmin?.name || currentUser.name).charAt(0).toUpperCase()}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="text-xs font-bold text-white truncate flex items-center gap-1.5">
+                <span>{authenticatedAdmin?.name || currentUser.name}</span>
+                <span className="text-[9px] bg-emerald-950 text-emerald-300 border border-emerald-800/60 px-1 py-0.2 rounded font-bold">
+                  SUPER
+                </span>
+              </div>
+              <div className="text-[10px] text-slate-400 truncate font-mono">
+                {authenticatedAdmin?.email || currentUser.email}
+              </div>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-500/10 transition-colors"
+              title="Sign Out"
+            >
+              <LogOut className="w-4 h-4" />
+            </button>
+          </div>
 
           <Link
-            href="/swagger"
-            className="px-4 py-2 rounded-xl text-xs font-bold bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 hover:text-emerald-600 flex items-center gap-1.5 shrink-0 ml-auto"
+            href="/"
+            className="flex items-center justify-center gap-1.5 w-full py-2 px-3 text-[11px] font-semibold text-slate-400 hover:text-white rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 transition-colors"
           >
-            <BookOpen className="w-3.5 h-3.5" />
-            <span>Swagger Spec</span>
+            <ArrowLeft className="w-3.5 h-3.5" />
+            <span>Public Directory</span>
           </Link>
         </div>
+      </aside>
 
-        {/* =========================================================================
-            IMMERSIVE BENTO GOVERNANCE KPI MATRIX
-        ========================================================================= */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+      {/* Backdrop overlay for mobile drawer */}
+      {mobileSidebarOpen && (
+        <div
+          onClick={() => setMobileSidebarOpen(false)}
+          className="fixed inset-0 z-40 bg-black/60 backdrop-blur-xs md:hidden"
+        />
+      )}
+
+      {/* =========================================================================
+          MAIN CONTENT CANVAS (RIGHT)
+      ========================================================================= */}
+      <main className="flex-1 min-w-0 p-4 sm:p-6 lg:p-8 space-y-6 overflow-y-auto">
+        {/* Top Header Bar for Active View */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-5 sm:p-6 shadow-sm">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
+              <span>Cockpit</span>
+              <span>/</span>
+              <span className="text-emerald-600 font-bold capitalize">
+                {activeTab.toLowerCase()}
+              </span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+              {activeTab === "JOBS" && "Curated Vacancy Catalog"}
+              {activeTab === "EMPLOYERS" && "Verified Employers & KYC"}
+              {activeTab === "FEEDS" && "RSS Syndication & Lead Ingestion"}
+              {activeTab === "APPLICANTS" && "Candidate Referral Pipeline"}
+              {activeTab === "QUEUE" && "Quality & Moderation Queue"}
+              {activeTab === "STAFF" && "Staff Roles & Governance"}
+              {activeTab === "SYSTEM" && "Telemetry & System Infrastructure"}
+            </h1>
+          </div>
+
+          {/* Contextual Quick Actions */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {activeTab === "JOBS" && (
+              <>
+                <button
+                  onClick={() => setIsCsvModalOpen(true)}
+                  className="px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Import CSV
+                </button>
+                <button
+                  onClick={handleExportCsv}
+                  className="px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                >
+                  Export CSV
+                </button>
+                <button
+                  onClick={() => {
+                    setEditingJob({
+                      listingType: "vacancy",
+                      workMode: "HYBRID",
+                      city: "Colombo",
+                      district: "Colombo",
+                      industry: "Information Technology",
+                      showWhatsApp: false,
+                      showEmail: false,
+                      showPhone: false,
+                    });
+                    setIsJobModalOpen(true);
+                  }}
+                  className="px-4 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm flex items-center gap-1.5 transition-all active:scale-95"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ Add Job</span>
+                </button>
+              </>
+            )}
+
+            {activeTab === "EMPLOYERS" && (
+              <button
+                onClick={() => {
+                  setEditingEmployer({
+                    verificationStatus: "VERIFIED_BUSINESS",
+                    district: "Colombo",
+                  });
+                  setIsEmployerModalOpen(true);
+                }}
+                className="px-4 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm flex items-center gap-1.5 transition-all active:scale-95"
+              >
+                <Plus className="w-4 h-4" />
+                <span>+ Register Employer</span>
+              </button>
+            )}
+
+            {activeTab === "FEEDS" && (
+              <>
+                <button
+                  onClick={() => {
+                    if (feeds.length > 0) handleSyncFeedNow(feeds[0].id, feeds[0].name);
+                  }}
+                  className="px-3.5 py-2 text-xs font-bold rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors flex items-center gap-1.5"
+                >
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <span>Sync Feeds</span>
+                </button>
+                <button
+                  onClick={() => setIsFeedModalOpen(true)}
+                  className="px-4 py-2 text-xs font-bold rounded-xl bg-amber-600 hover:bg-amber-700 text-white shadow-sm flex items-center gap-1.5 transition-all active:scale-95"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ Add Feed</span>
+                </button>
+              </>
+            )}
+
+            {activeTab === "STAFF" && (
+              <button
+                onClick={() => setIsStaffModalOpen(true)}
+                className="px-4 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm flex items-center gap-1.5 transition-all active:scale-95"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>+ Add Staff Member</span>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* 6-Metric Bento Matrix */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
           <div className="bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 p-4 rounded-2xl shadow-xs space-y-1">
             <div className="flex items-center justify-between text-slate-400">
               <span className="text-[10px] font-bold uppercase tracking-wider">Total Listings</span>
@@ -1847,62 +2160,107 @@ export default function AdminPortalPage() {
         ========================================================================= */}
         {activeTab === "STAFF" && (
           <div className="bg-white dark:bg-slate-900 rounded-3xl p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-bento space-y-6">
-            <div>
-              <h3 className="font-bold text-base text-slate-900 dark:text-white">
-                Platform Personnel & Role-Based Access Control
-              </h3>
-              <p className="text-xs text-slate-500">
-                Authorized Super Administrators with full system governance and RLS privileges.
-              </p>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
+              <div>
+                <h3 className="font-bold text-base text-slate-900 dark:text-white flex items-center gap-2">
+                  <span>Platform Personnel & Role-Based Access Control</span>
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-bold">
+                    {staffList.length} Active Staff
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Authorized Super Administrators and operational personnel with granular permission boundaries.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsStaffModalOpen(true)}
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm transition-all active:scale-95"
+              >
+                <UserPlus className="w-4 h-4" />
+                <span>+ Add Staff Member</span>
+              </button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {SEED_ADMIN_AND_STAFF.map((staff) => (
-                <div
-                  key={staff.id}
-                  className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex flex-col justify-between space-y-4"
-                >
-                  <div className="space-y-3">
-                    <div className="flex items-center gap-3">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={staff.avatar}
-                        alt={staff.name}
-                        className="w-12 h-12 rounded-xl object-cover border border-slate-300 dark:border-slate-700"
-                      />
-                      <div>
-                        <div className="font-bold text-sm text-slate-900 dark:text-white">
-                          {staff.name}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {staffList.map((staff) => {
+                const isRootAdmin =
+                  staff.email.toLowerCase() === "contactrajeevan@hotmail.com" ||
+                  staff.email.toLowerCase() === "anasbikes1992@gmail.com";
+                return (
+                  <div
+                    key={staff.id}
+                    className="p-5 rounded-2xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 flex flex-col justify-between space-y-4 hover:border-emerald-500/40 transition-colors shadow-xs"
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-emerald-600/10 border border-emerald-500/30 flex items-center justify-center text-emerald-500 font-extrabold text-base shrink-0">
+                          {staff.name.charAt(0).toUpperCase()}
                         </div>
-                        <div className="text-[11px] text-emerald-600 font-semibold">{staff.role}</div>
+                        <div className="min-w-0">
+                          <div className="font-bold text-sm text-slate-900 dark:text-white truncate">
+                            {staff.name}
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span
+                              className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
+                                staff.role === "SUPER_ADMIN"
+                                  ? "bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300"
+                                  : staff.role === "MODERATOR_STAFF"
+                                  ? "bg-blue-100 dark:bg-blue-950 text-blue-700 dark:text-blue-300"
+                                  : "bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300"
+                              }`}
+                            >
+                              {staff.role}
+                            </span>
+                            {isRootAdmin && (
+                              <span className="text-[10px] font-semibold text-slate-400">
+                                (Super Admin)
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-xs text-slate-500 font-mono truncate">{staff.email}</div>
+                      <div className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                        {staff.department}
+                      </div>
+
+                      <div className="space-y-1">
+                        <span className="text-[10px] uppercase font-bold text-slate-400">
+                          Granted Permissions:
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {staff.permissions.map((p, i) => (
+                            <span
+                              key={i}
+                              className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 text-[10px] font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800"
+                            >
+                              {p}
+                            </span>
+                          ))}
+                        </div>
                       </div>
                     </div>
 
-                    <div className="text-xs text-slate-500 font-mono">{staff.email}</div>
-
-                    <div className="space-y-1">
-                      <span className="text-[10px] uppercase font-bold text-slate-400">
-                        Granted Permissions:
-                      </span>
-                      <div className="flex flex-wrap gap-1">
-                        {staff.permissions.map((p, i) => (
-                          <span
-                            key={i}
-                            className="px-2 py-0.5 rounded-md bg-white dark:bg-slate-900 text-[10px] font-semibold text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-800"
-                          >
-                            {p}
-                          </span>
-                        ))}
-                      </div>
+                    <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
+                      <span>Status: {staff.status}</span>
+                      {!isRootAdmin && (
+                        <button
+                          type="button"
+                          onClick={() => handleDeleteStaff(staff.id, staff.name)}
+                          className="text-rose-500 hover:text-rose-600 font-bold flex items-center gap-1 text-[11px] transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Remove</span>
+                        </button>
+                      )}
                     </div>
                   </div>
-
-                  <div className="pt-3 border-t border-slate-200 dark:border-slate-800 flex items-center justify-between text-[11px] text-slate-400">
-                    <span>Status: Active</span>
-                    <span className="text-emerald-600 font-bold">2FA Enabled</span>
-                  </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
@@ -1960,7 +2318,6 @@ export default function AdminPortalPage() {
             </div>
           </div>
         )}
-      </div>
 
       {/* =========================================================================
           MODAL: CREATE / EDIT JOB
@@ -2651,6 +3008,117 @@ export default function AdminPortalPage() {
           </div>
         </div>
       )}
+
+      {/* =========================================================================
+          MODAL: ADD NEW STAFF MEMBER
+      ========================================================================= */}
+      {isStaffModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-lg w-full p-6 sm:p-8 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                <UserPlus className="w-5 h-5 text-emerald-500" />
+                <span>Add Staff Member</span>
+              </h3>
+              <button
+                onClick={() => setIsStaffModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600 text-lg font-bold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveStaff} className="space-y-4">
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Full Name *
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={newStaffData.name}
+                  onChange={(e) => setNewStaffData({ ...newStaffData, name: e.target.value })}
+                  placeholder="e.g. Ruwan Wickramasinghe"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                  Staff Email Address *
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={newStaffData.email}
+                  onChange={(e) => setNewStaffData({ ...newStaffData, email: e.target.value })}
+                  placeholder="staff@jobeelanka.com"
+                  className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                    Role Category *
+                  </label>
+                  <select
+                    value={newStaffData.role}
+                    onChange={(e) => {
+                      const role = e.target.value as StaffUser["role"];
+                      const defaultDept =
+                        role === "SUPER_ADMIN"
+                          ? "Platform Governance"
+                          : role === "MODERATOR_STAFF"
+                          ? "Job Moderation & Quality Assurance"
+                          : "Trust, Compliance & SLBFE Verification";
+                      setNewStaffData({ ...newStaffData, role, department: defaultDept });
+                    }}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none"
+                  >
+                    <option value="MODERATOR_STAFF">Moderator Staff</option>
+                    <option value="TRUST_SAFETY_STAFF">Trust & Safety Staff</option>
+                    <option value="SUPER_ADMIN">Super Administrator</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
+                    Department
+                  </label>
+                  <input
+                    type="text"
+                    value={newStaffData.department}
+                    onChange={(e) =>
+                      setNewStaffData({ ...newStaffData, department: e.target.value })
+                    }
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  type="button"
+                  onClick={() => setIsStaffModalOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-100"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingStaff}
+                  className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md disabled:opacity-50"
+                >
+                  {isSubmittingStaff ? "Saving..." : "Save Staff Member"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      </main>
     </div>
   );
 }
