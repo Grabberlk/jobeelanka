@@ -125,3 +125,44 @@ create policy "Allow full access for service role on applications"
   on public.applications for all
   using (auth.role() = 'service_role');
 
+-- 4. STAFF TABLE (Admin Governance Cockpit & RBAC)
+create table if not exists public.staff (
+  id text primary key,
+  name text not null,
+  email text unique not null,
+  role text not null default 'MODERATOR_STAFF',
+  department text not null default 'Job Moderation & Quality Assurance',
+  permissions jsonb not null default '[]'::jsonb,
+  status text not null default 'ACTIVE',
+  two_factor_enabled boolean not null default false,
+  avatar_url text,
+  last_login timestamptz,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- Performance Index for Staff
+create index if not exists idx_staff_email on public.staff(email);
+create index if not exists idx_staff_role on public.staff(role);
+
+-- Enable Row Level Security (RLS) on Staff
+alter table public.staff enable row level security;
+
+-- Only authenticated Super Admins / service role can access Staff table
+create policy "Allow full access for service role on staff"
+  on public.staff for all
+  using (auth.role() = 'service_role');
+
+-- Seed Root Super Administrators
+insert into public.staff (id, name, email, role, department, permissions, status, two_factor_enabled)
+values 
+  ('staff-super-1', 'Rajeevan', 'contactrajeevan@hotmail.com', 'SUPER_ADMIN', 'Platform Governance & Strategic Direction', '["ALL_PRIVILEGES", "MANAGE_STAFF", "APPROVE_EMPLOYERS", "OVERRIDE_MODERATION", "VIEW_AUDIT_LOGS", "SYSTEM_SETTINGS", "API_KEY_ISSUANCE", "CSV_IMPORT_EXPORT"]'::jsonb, 'ACTIVE', true),
+  ('staff-super-2', 'Anas', 'anasbikes1992@gmail.com', 'SUPER_ADMIN', 'Operations & Commercial Partnerships', '["ALL_PRIVILEGES", "MANAGE_STAFF", "APPROVE_EMPLOYERS", "OVERRIDE_MODERATION", "VIEW_AUDIT_LOGS", "SYSTEM_SETTINGS", "API_KEY_ISSUANCE", "CSV_IMPORT_EXPORT"]'::jsonb, 'ACTIVE', true)
+on conflict (email) do update 
+set 
+  role = excluded.role,
+  department = excluded.department,
+  permissions = excluded.permissions,
+  status = excluded.status;
+
+

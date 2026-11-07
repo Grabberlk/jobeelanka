@@ -1,117 +1,147 @@
-# Graph Report - Lanka Careers  (2026-11-06)
+# Graph Report - Lanka Careers  (2026-11-08)
 
 ## Corpus Check
-- Corpus is ~36,532 words - fits in a single context window. You may not need a graph.
+- 86 files · ~384,348 words
+- Verdict: corpus is large enough that graph structure adds value.
+- Unclassified: 5 file(s) not represented in the graph (top: .csv 2, .example 1, (none) 1)
 
 ## Summary
-- 260 nodes · 562 edges · 14 communities (11 shown, 3 thin omitted)
+- 441 nodes · 764 edges · 18 communities (15 shown, 3 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
+## Graph Freshness
+- Built from commit: `a00513a7`
+- Run `git rev-parse HEAD` and compare to check if the graph is stale.
+- Run `graphify update .` after code changes (no API cost).
+
 ## Community Hubs (Navigation)
-- Cluster 0
-- Cluster 1
-- Cluster 2
-- Cluster 3
-- Cluster 4
-- Cluster 5
-- Cluster 6
-- Cluster 7
-- Cluster 8
-- Cluster 9
-- Cluster 10
-- Cluster 11
+- package.json
+- react
+- repository.ts
+- admin/page.tsx
+- JobeeLanka: Comparative Review and New Website Strategy
+- rss-parser.ts
+- compilerOptions
+- cn
+- Lanka Careers & Talents: Next-Gen Job Discovery OS & Growth Blueprint
+- next
+- motion.ts
+- next.config.mjs
+- csv-service.test.js
+- generate-legacy-json.js
+- staff/route.ts
+- JobeeLanka (Sri Lanka's Curated Job & Employer Directory)
+- .mcp.json
 
 ## God Nodes (most connected - your core abstractions)
-1. `react` - 35 edges
-2. `next` - 30 edges
-3. `lucide-react` - 24 edges
+1. `next` - 42 edges
+2. `react` - 36 edges
+3. `lucide-react` - 27 edges
 4. `cn()` - 24 edges
-5. `compilerOptions` - 16 edges
-6. `Job` - 14 edges
-7. `JobRepository` - 12 edges
-8. `buildWhatsAppUrl()` - 11 edges
-9. `HomePage()` - 10 edges
-10. `JobCard()` - 10 edges
+5. `JobeeLanka: Comparative Review and New Website Strategy` - 18 edges
+6. `compilerOptions` - 16 edges
+7. `JobRepository` - 14 edges
+8. `Job` - 14 edges
+9. `Lanka Careers & Talents: Next-Gen Job Discovery OS & Growth Blueprint` - 14 edges
+10. `buildWhatsAppUrl()` - 10 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `JobDetailPage()` --calls--> `DynamicJobReelPlayer`  [EXTRACTED]
-  src/app/jobs/[slug]/page.tsx → src/components/video/DynamicJobReelPlayer.tsx
-- `JobsSearchContent()` --calls--> `JobCard()`  [EXTRACTED]
-  src/app/jobs/page.tsx → src/components/jobs/JobCard.tsx
-- `HomePage()` --calls--> `ApplyModal()`  [EXTRACTED]
-  src/app/page.tsx → src/components/jobs/ApplyModal.tsx
-- `HomePage()` --calls--> `JobCard()`  [EXTRACTED]
-  src/app/page.tsx → src/components/jobs/JobCard.tsx
-- `BentoCard()` --calls--> `cn()`  [EXTRACTED]
-  src/components/bento/BentoCard.tsx → src/lib/utils.ts
+- `AdminPortalPage()` --calls--> `formatDateRelative()`  [EXTRACTED]
+  src/app/admin/page.tsx → src/lib/utils.ts
+- `GET()` --calls--> `verifyAdminSessionToken()`  [EXTRACTED]
+  src/app/api/v1/auth/admin/route.ts → src/modules/auth/admin-auth.ts
+- `CompaniesPage()` --calls--> `AdSlot()`  [EXTRACTED]
+  src/app/companies/page.tsx → src/components/ads/AdSlot.tsx
+- `JobDetailPage()` --calls--> `AdSlot()`  [EXTRACTED]
+  src/app/jobs/[slug]/page.tsx → src/components/ads/AdSlot.tsx
+- `JobsSearchContent()` --calls--> `AdSlot()`  [EXTRACTED]
+  src/app/jobs/page.tsx → src/components/ads/AdSlot.tsx
 
 ## Import Cycles
 - None detected.
 
-## Communities (14 total, 3 thin omitted)
+## Communities (18 total, 3 thin omitted)
 
-### Community 0 - "Cluster 0"
-Cohesion: 0.07
-Nodes (38): dependencies, clsx@^2.1.1, lucide-react@^1.16.0, next@15.1.7, react@19.0.0, react-dom@19.0.0, @remotion/player@^4.0.240, tailwind-merge@^3.0.2 (+30 more)
+### Community 0 - "package.json"
+Cohesion: 0.06
+Nodes (41): dependencies, class-variance-authority@^0.7.1, clsx@^2.1.1, lucide-react@^1.16.0, next@15.1.12, react@19.0.0, react-dom@19.0.0, @supabase/supabase-js@^2.119.0 (+33 more)
 
-### Community 1 - "Cluster 1"
-Cohesion: 0.14
-Nodes (17): lucide-react, react, CandidateDashboardPage(), EmployerDashboardPage(), HomePage(), metadata, BentoCard(), BentoCardProps (+9 more)
+### Community 1 - "react"
+Cohesion: 0.09
+Nodes (24): lucide-react, react, metadata, CompaniesPage(), metadata, CandidateDashboardPage(), EmployerDashboardPage(), HomePage() (+16 more)
 
-### Community 2 - "Cluster 2"
-Cohesion: 0.08
-Nodes (10): next, metadata, RouteParams, RouteParams, SwaggerDocsPage(), applicationsStore, employersStore, JobRepository (+2 more)
+### Community 2 - "repository.ts"
+Cohesion: 0.06
+Nodes (24): RFC-4180, RouteParams, RouteParams, JobsPage(), JobsSearchContent(), ApplyModal(), JobFilters(), JobFiltersProps (+16 more)
 
-### Community 3 - "Cluster 3"
+### Community 3 - "admin/page.tsx"
 Cohesion: 0.15
-Nodes (22): class-variance-authority@^0.7.1, class-variance-authority, AdminPortalPage(), JobDetailPage(), JobDetailPageProps, ApplyModalProps, DirectEmployerApplyBox(), DirectEmployerApplyBoxProps (+14 more)
+Nodes (22): AdminPortalPage(), AdminTab, JobDetailPage(), JobDetailPageProps, ApplyModalProps, DirectEmployerApplyBox(), DirectEmployerApplyBoxProps, JobCard() (+14 more)
 
-### Community 4 - "Cluster 4"
-Cohesion: 0.12
-Nodes (16): metadata, JobsPage(), JobsSearchContent(), ApplyModal(), JobFilters(), JobFiltersProps, INDUSTRIES, SALARY_BENCHMARKS (+8 more)
+### Community 4 - "JobeeLanka: Comparative Review and New Website Strategy"
+Cohesion: 0.04
+Nodes (46): 10. Recommended database model, 11. Employer listing workflow, 12. What should be in the first release, 13. Suggested implementation stack, 14. 90-day launch plan, 15. Key metrics for this business model, 16. Revised copy-ready build prompt, 1. Final recommendation (+38 more)
 
-### Community 5 - "Cluster 5"
-Cohesion: 0.13
-Nodes (13): AdminTab, ModerationItem, SEED_ADMIN_AND_STAFF, SEED_MODERATION_QUEUE, StaffUser, FeedIngestionService, feedsStore, ParsedRssItem (+5 more)
+### Community 5 - "rss-parser.ts"
+Cohesion: 0.15
+Nodes (8): FeedIngestionService, feedsStore, ParsedRssItem, syncLogsStore, FeedSyncLog, JobFeed, PRECONFIGURED_FEEDS, SEED_EMPLOYERS
 
-### Community 6 - "Cluster 6"
+### Community 6 - "compilerOptions"
 Cohesion: 0.11
 Nodes (18): compilerOptions, allowJs, esModuleInterop, incremental, isolatedModules, jsx, lib, module (+10 more)
 
-### Community 7 - "Cluster 7"
-Cohesion: 0.18
-Nodes (14): Avatar, AvatarFallback, AvatarImage, Card, CardContent, CardDescription, CardFooter, CardHeader (+6 more)
+### Community 7 - "cn"
+Cohesion: 0.15
+Nodes (17): Avatar, AvatarFallback, AvatarImage, Button, ButtonProps, buttonVariants, Card, CardContent (+9 more)
 
-### Community 8 - "Cluster 8"
-Cohesion: 0.36
-Nodes (4): remotion@^4.0.240, remotion, JobReel(), JobReelProps
+### Community 8 - "Lanka Careers & Talents: Next-Gen Job Discovery OS & Growth Blueprint"
+Cohesion: 0.05
+Nodes (39): 10. Four-Phase Implementation Roadmap & Success Metrics, 11. Master Autonomous Build Prompt, 12. Primary References & Authorities, 1. Executive Vision & Strategic Paradigm Shift, 1. Public Homepage Bento Hero Layout (Desktop 12-Column Grid), 2. Candidate "Career Cockpit" Bento Dashboard, 2. Domain-Driven Design (DDD) & System Architecture, 3. Architecture Decision Records (ADRs) (+31 more)
 
-### Community 9 - "Cluster 9"
-Cohesion: 0.32
-Nodes (6): inter, metadata, RootLayout(), viewport, Footer(), Navbar()
+### Community 9 - "next"
+Cohesion: 0.09
+Nodes (13): next, metadata, metadata, inter, metadata, RootLayout(), viewport, ReportListingForm() (+5 more)
 
-### Community 10 - "Cluster 10"
+### Community 10 - "motion.ts"
 Cohesion: 0.33
 Nodes (5): bentoCardHover, bentoSpring, containerStagger, gentleFade, itemStagger
 
+### Community 12 - "csv-service.test.js"
+Cohesion: 0.09
+Nodes (15): assert, { test, describe }, assert, fs, path, test, assert, test (+7 more)
+
+### Community 14 - "generate-legacy-json.js"
+Cohesion: 0.11
+Nodes (12): colMap, csvPath, employersMap, empOutputPath, fs, jobs, outputPath, path (+4 more)
+
+### Community 15 - "staff/route.ts"
+Cohesion: 0.18
+Nodes (14): checkAuth(), DELETE(), GET(), POST(), staffList, GET(), POST(), AdminUser (+6 more)
+
+### Community 16 - "JobeeLanka (Sri Lanka's Curated Job & Employer Directory)"
+Cohesion: 0.33
+Nodes (5): JobeeLanka (Sri Lanka's Curated Job & Employer Directory), 🌟 Key Features, 📜 License & Compliance, 📁 Project Architecture, 🚀 Quickstart
+
 ## Knowledge Gaps
+- **1 isolated node(s):** `RFC-4180`
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 218 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `next` connect `Cluster 2` to `Cluster 0`, `Cluster 1`, `Cluster 3`, `Cluster 4`, `Cluster 5`, `Cluster 9`?**
-  _High betweenness centrality (0.250) - this node is a cross-community bridge._
-- **Should `Cluster 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.06538461538461539 - nodes in this community are weakly interconnected._
-- **Why does `react` connect `Cluster 1` to `Cluster 0`, `Cluster 2`, `Cluster 3`, `Cluster 4`, `Cluster 5`, `Cluster 7`, `Cluster 8`?**
-  _High betweenness centrality (0.198) - this node is a cross-community bridge._
-- **Should `Cluster 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.13968253968253969 - nodes in this community are weakly interconnected._
-- **Why does `lucide-react` connect `Cluster 1` to `Cluster 0`, `Cluster 2`, `Cluster 3`, `Cluster 4`, `Cluster 5`?**
-  _High betweenness centrality (0.073) - this node is a cross-community bridge._
-- **Should `Cluster 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.07777777777777778 - nodes in this community are weakly interconnected._
-- **Should `Cluster 3` be split into smaller, more focused modules?**
-  _Cohesion score 0.14838709677419354 - nodes in this community are weakly interconnected._
+- **Why does `next` connect `next` to `package.json`, `react`, `repository.ts`, `admin/page.tsx`, `rss-parser.ts`, `staff/route.ts`?**
+  _High betweenness centrality (0.193) - this node is a cross-community bridge._
+- **What connects `RFC-4180` to the rest of the system?**
+  _1 weakly-connected nodes found - possible documentation gaps or missing edges._
+- **Should `package.json` be split into smaller, more focused modules?**
+  _Cohesion score 0.06090808416389812 - nodes in this community are weakly interconnected._
+- **Why does `react` connect `react` to `package.json`, `repository.ts`, `admin/page.tsx`, `cn`, `next`?**
+  _High betweenness centrality (0.083) - this node is a cross-community bridge._
+- **Should `react` be split into smaller, more focused modules?**
+  _Cohesion score 0.09061224489795919 - nodes in this community are weakly interconnected._
+- **Why does `lucide-react` connect `react` to `package.json`, `next`, `repository.ts`, `admin/page.tsx`?**
+  _High betweenness centrality (0.034) - this node is a cross-community bridge._
+- **Should `repository.ts` be split into smaller, more focused modules?**
+  _Cohesion score 0.05779220779220779 - nodes in this community are weakly interconnected._

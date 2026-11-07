@@ -47,7 +47,9 @@ import {
   EyeOff,
   Menu,
   X,
-  UserPlus
+  UserPlus,
+  Sun,
+  Moon
 } from "lucide-react";
 import { formatCurrency, formatDateRelative, buildWhatsAppUrl } from "@/lib/utils";
 
@@ -56,6 +58,32 @@ type AdminTab = "JOBS" | "EMPLOYERS" | "FEEDS" | "APPLICANTS" | "QUEUE" | "STAFF
 export default function AdminPortalPage() {
   // Mobile Left Sidebar State
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Theme State (Dark / Light Mode Toggle)
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
+
+  useEffect(() => {
+    const saved = typeof window !== "undefined" ? localStorage.getItem("jobeelanka-theme") : null;
+    if (saved === "light") {
+      setIsDarkMode(false);
+      document.documentElement.classList.remove("dark");
+    } else {
+      setIsDarkMode(true);
+      document.documentElement.classList.add("dark");
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    if (isDarkMode) {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("jobeelanka-theme", "light");
+      setIsDarkMode(false);
+    } else {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("jobeelanka-theme", "dark");
+      setIsDarkMode(true);
+    }
+  };
 
   // Admin Authentication & Session State
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
@@ -1049,6 +1077,17 @@ export default function AdminPortalPage() {
                 {authenticatedAdmin?.email || currentUser.email}
               </div>
             </div>
+            {/* Theme Toggle Button */}
+            <button
+              type="button"
+              onClick={toggleTheme}
+              className="p-1.5 rounded-lg text-amber-400 hover:text-amber-300 hover:bg-amber-400/10 transition-colors"
+              title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+              aria-label="Toggle Dark / Light Theme"
+            >
+              {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
+
             <button
               onClick={handleLogout}
               className="p-1.5 rounded-lg text-rose-400 hover:bg-rose-500/10 transition-colors"

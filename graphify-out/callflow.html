@@ -1,0 +1,2410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lanka Careers — Complete Call Flow &amp; Architecture Documentation</title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+:root {
+  --bg: #0f172a; --surface: #1e293b; --border: #334155;
+  --text: #e2e8f0; --muted: #94a3b8; --accent: #38bdf8;
+  --warn: #fbbf24; --err: #f87171; --ok: #34d399;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+.container { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+h1 { font-size: 2.4rem; margin-bottom: 8px; background: linear-gradient(135deg, var(--accent), #a78bfa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+h2 { font-size: 1.7rem; margin: 48px 0 16px; padding-bottom: 8px; border-bottom: 2px solid var(--accent); }
+h3 { font-size: 1.25rem; margin: 32px 0 12px; color: var(--accent); }
+h4 { font-size: 1.05rem; margin: 20px 0 8px; color: var(--warn); }
+p { margin: 8px 0; color: var(--muted); }
+.subtitle { color: var(--muted); font-size: 1.1rem; margin-bottom: 32px; }
+.mermaid { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; margin: 20px 0; overflow-x: auto; position: relative; }
+.mermaid.is-enhanced { padding: 0; overflow: hidden; min-height: 260px; }
+.mermaid-viewport { padding: 54px 24px 24px; overflow: hidden; cursor: grab; touch-action: none; min-height: 260px; }
+.mermaid-viewport.is-dragging { cursor: grabbing; }
+.mermaid-viewport svg { max-width: none !important; height: auto; transform-origin: 0 0; transition: transform 120ms ease; }
+.mermaid-toolbar { position: absolute; top: 10px; right: 10px; z-index: 3; display: flex; align-items: center; gap: 6px; padding: 6px; background: rgba(15,23,42,0.92); border: 1px solid var(--border); border-radius: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.28); }
+.mermaid-toolbar button, .mermaid-toolbar .zoom-level { height: 28px; min-width: 32px; border: 1px solid var(--border); border-radius: 6px; background: #1e293b; color: var(--text); font: 600 0.78rem system-ui, sans-serif; display: inline-flex; align-items: center; justify-content: center; }
+.mermaid-toolbar button { cursor: pointer; }
+.mermaid-toolbar button:hover { border-color: var(--accent); color: var(--accent); }
+.mermaid-toolbar .zoom-level { min-width: 52px; color: var(--muted); background: transparent; }
+.call-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.92rem; }
+.call-table th { background: #1a2744; color: var(--accent); text-align: left; padding: 10px 14px; border: 1px solid var(--border); }
+.call-table td { padding: 8px 14px; border: 1px solid var(--border); vertical-align: top; }
+.call-table tr:nth-child(even) { background: rgba(255,255,255,0.02); }
+.tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; }
+.tag-async { background: #7c3aed33; color: #a78bfa; }
+.tag-class { background: #05966933; color: var(--ok); }
+.tag-func { background: #2563eb33; color: var(--accent); }
+.tag-cmd { background: #d9770633; color: var(--warn); }
+.tag-endpoint { background: #dc262633; color: var(--err); }
+.tag-hook { background: #db277733; color: #f472b6; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin: 16px 0; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 16px; margin: 16px 0; }
+.arrow-chain { font-family: 'Fira Code', monospace; font-size: 0.85rem; color: var(--accent); padding: 10px; background: rgba(56,189,248,0.06); border-radius: 6px; }
+code { font-family: 'Fira Code', 'Cascadia Code', monospace; background: rgba(255,255,255,0.06); padding: 1px 6px; border-radius: 3px; font-size: 0.88em; }
+ul, ol { margin: 8px 0 8px 24px; color: var(--muted); }
+li { margin: 4px 0; }
+a { color: var(--accent); }
+hr { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+.nav { position: sticky; top: 0; background: var(--bg); z-index: 10; padding: 12px 0; border-bottom: 1px solid var(--border); display: flex; gap: 20px; flex-wrap: wrap; font-size: 0.9rem; }
+.nav a { text-decoration: none; }
+.nav a:hover { text-decoration: underline; }
+@media (max-width: 768px) { .container { padding: 16px; } h1 { font-size: 1.8rem; } }
+
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>Lanka Careers — Complete Call Flow &amp; Architecture Documentation</h1>
+<p class="subtitle">Generated from graphify knowledge graph: 441 nodes, 764 edges, 18 communities. Commit: a00513a</p>
+
+<div class="nav">
+    <a href="#overview">Architecture Overview</a>
+    <a href="#build-graph">Graph Build</a>
+    <a href="#serve-api">Serving API</a>
+    <a href="#tests-fixtures">Tests &amp; Fixtures</a>
+    <a href="#jobs-components-admin">Jobs Components Admin</a>
+    <a href="#components-cardtsx-buttontsx">Components Cardtsx Buttontsx</a>
+    <a href="#motionts-bentocardhover-bentospring">Motionts Bentocardhover Bentospring</a>
+    <a href="#readmemd-jobeelanka-sri">Readmemd Jobeelanka Sri</a>
+    <a href="#nextconfigmjs-next-nextconfig">Nextconfigmjs Next Nextconfig</a>
+    <a href="#postcssconfigjs">Postcssconfigjs</a>
+</div>
+
+<!-- ====== Architecture Overview ====== -->
+<h2 id="overview">1. Architecture Overview</h2>
+
+<div class="mermaid">
+
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    BUILD_GRAPH_321CBB04("Graph Build<br/><small>221 nodes</small>")
+    class BUILD_GRAPH_321CBB04 module;
+    SERVE_API_35EC8E86("Serving API<br/><small>121 nodes</small>")
+    class SERVE_API_35EC8E86 module;
+    TESTS_FIXTURES_B84B1DCC("Tests &amp; Fixtures<br/><small>28 nodes</small>")
+    class TESTS_FIXTURES_B84B1DCC module;
+    JOBS_COMPONENTS_ADMIN_C7ECDA71("Jobs Components Admin<br/><small>32 nodes</small>")
+    class JOBS_COMPONENTS_ADMIN_C7ECDA71 module;
+    COMPONENTS_CARDTSX_BUTTONTSX_5A82F787("Components Cardtsx Buttontsx<br/><small>22 nodes</small>")
+    class COMPONENTS_CARDTSX_BUTTONTSX_5A82F787 module;
+    MOTIONTS_BENTOCARDHOVER_BENTOSPRING_64DF22C6("Motionts Bentocardhover Bentospring<br/><small>6 nodes</small>")
+    class MOTIONTS_BENTOCARDHOVER_BENTOSPRING_64DF22C6 module;
+    READMEMD_JOBEELANKA_SRI_AC84A504("Readmemd Jobeelanka Sri<br/><small>6 nodes</small>")
+    class READMEMD_JOBEELANKA_SRI_AC84A504 module;
+    NEXTCONFIGMJS_NEXT_NEXTCONFIG_2D837306("Nextconfigmjs Next Nextconfig<br/><small>4 nodes</small>")
+    class NEXTCONFIGMJS_NEXT_NEXTCONFIG_2D837306 module;
+    POSTCSSCONFIGJS_C9184DB0("Postcssconfigjs<br/><small>1 nodes</small>")
+    class POSTCSSCONFIGJS_C9184DB0 module;
+    SERVE_API_35EC8E86 -->|imports x24| BUILD_GRAPH_321CBB04
+    BUILD_GRAPH_321CBB04 -->|imports x21| SERVE_API_35EC8E86
+    JOBS_COMPONENTS_ADMIN_C7ECDA71 -->|imports x18| SERVE_API_35EC8E86
+    JOBS_COMPONENTS_ADMIN_C7ECDA71 -->|imports x17| BUILD_GRAPH_321CBB04
+    SERVE_API_35EC8E86 -->|imports x13| JOBS_COMPONENTS_ADMIN_C7ECDA71
+    BUILD_GRAPH_321CBB04 -->|imports x8| JOBS_COMPONENTS_ADMIN_C7ECDA71
+    COMPONENTS_CARDTSX_BUTTONTSX_5A82F787 -->|imports x6| BUILD_GRAPH_321CBB04
+    COMPONENTS_CARDTSX_BUTTONTSX_5A82F787 -->|imports x5| JOBS_COMPONENTS_ADMIN_C7ECDA71
+    BUILD_GRAPH_321CBB04 -->|calls x4| COMPONENTS_CARDTSX_BUTTONTSX_5A82F787
+    JOBS_COMPONENTS_ADMIN_C7ECDA71 -->|calls x3| COMPONENTS_CARDTSX_BUTTONTSX_5A82F787
+    SERVE_API_35EC8E86 -->|imports| TESTS_FIXTURES_B84B1DCC
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<div class="grid">
+  <div class="card">
+    <h4>Architecture Layers</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>Layer</th><th>Nodes</th><th>Communities</th></tr>
+      <tr><td>Graph Build</td><td>221</td><td><code>1, 4, 0, 8, 14, 6, 17</code></td></tr><tr><td>Serving API</td><td>121</td><td><code>2, 9, 15, 5</code></td></tr><tr><td>Tests &amp; Fixtures</td><td>28</td><td><code>12</code></td></tr><tr><td>Jobs Components Admin</td><td>32</td><td><code>3</code></td></tr><tr><td>Components Cardtsx Buttontsx</td><td>22</td><td><code>7</code></td></tr><tr><td>Motionts Bentocardhover Bentospring</td><td>6</td><td><code>10</code></td></tr><tr><td>Readmemd Jobeelanka Sri</td><td>6</td><td><code>16</code></td></tr><tr><td>Nextconfigmjs Next Nextconfig</td><td>4</td><td><code>11</code></td></tr><tr><td>Postcssconfigjs</td><td>1</td><td><code>13</code></td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Core Flow</h4>
+    <div class="arrow-chain">Motionts Bentocardhover Bentospring -&gt; Graph Build -&gt; Serving API -&gt; Jobs Components Admin -&gt; Components Cardtsx Buttontsx -&gt; Tests &amp; Fixtures -&gt; Readmemd Jobeelanka Sri</div>
+  </div>
+</div>
+<div class="grid">
+  <div class="card">
+    <h4>Graph Report Highlights</h4>
+    <ul>
+      <li>441 nodes · 764 edges · 18 communities (15 shown, 3 thin omitted)</li>
+      <li>Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS</li>
+      <li>Token cost: 0 input · 0 output</li>
+      <li>1. `next` - 42 edges</li>
+      <li>2. `react` - 36 edges</li>
+      <li>3. `lucide-react` - 27 edges</li>
+    </ul>
+  </div>
+</div>
+<hr>
+<!-- ====== 2. Graph Build ====== -->
+<h2 id="build-graph">2. Graph Build</h2>
+<p>Graph Build groups implementation around jobeelanka, review, comparative, new, mostly in JobeeLanka_ Comparative Review and New Website Strategy.md, package.json, Lanka Careers &amp; Talents_ Job Portal Redesign and Growth Blueprint.md. This section covers 221 nodes and 294 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Graph Build (221 nodes, 294 edges)
+    subgraph build_graph_package_json_4e40bfbd["package.json"]
+        package_582681c2("package.json")
+        ref_supabase_supabase_js_135d18c5("@supabase/supabase-js<br/><small>package.json</small>")
+        ref_class_variance_authority_ccc2b2d1("class-variance-authority<br/><small>package.json</small>")
+    end
+    subgraph build_graph_app_companies_page_tsx_ccb52e55["app/companies/page.tsx"]
+        src_app_companies_page_4e0d41ed("page.tsx")
+        src_app_companies_page_companiespage_c7677988("CompaniesPage()<br/><small>app/companies/page.tsx</small>")
+    end
+    subgraph build_graph_dashboard_candidate_page_tsx_c1a88b96["dashboard/candidate/page.tsx"]
+        src_app_dashboard_candidate_page_b54ea9bb("page.tsx")
+        src_app_dashboard_candidate_page_candidatedashbo_44951e6d("CandidateDashboardPage()<br/><small>dashboard/candidate/page.tsx</small>")
+    end
+    subgraph build_graph_dashboard_employer_page_tsx_3aadfac7["dashboard/employer/page.tsx"]
+        src_app_dashboard_employer_page_8a971721("page.tsx")
+        src_app_dashboard_employer_page_employerdashboar_ff302350("EmployerDashboardPage()<br/><small>dashboard/employer/page.tsx</small>")
+    end
+    subgraph build_graph_src_app_page_tsx_ce39254a["src/app/page.tsx"]
+        src_app_page_29d61f84("page.tsx")
+        src_app_page_homepage_7f863ba2("HomePage()<br/><small>src/app/page.tsx</small>")
+    end
+    src_components_ads_adslot_adslot_da7a5cbe("AdSlot()<br/><small>components/ads/AdSlot.tsx</small>")
+    src_components_bento_bentocard_bentocard_c84d5f22("BentoCard()<br/><small>components/bento/BentoCard.tsx</small>")
+    src_components_bento_bentogrid_bentogrid_1e38596f("BentoGrid()<br/><small>components/bento/BentoGrid.tsx</small>")
+    src_components_bento_bentoherosearch_bentoherose_40592fbd("BentoHeroSearch()<br/><small>components/bento/BentoHeroSearch.tsx</small>")
+    src_components_bento_livepulseticker_livepulseti_1d092cfb("LivePulseTicker()<br/><small>components/bento/LivePulseTicker.tsx</small>")
+    src_components_bento_salarybenchmarkcard_salaryb_a251f54a("SalaryBenchmarkCard()<br/><small>components/bento/SalaryBenchmarkCard.tsx</small>")
+    src_components_bento_verifieddirectorycard_verif_6db14706("VerifiedDirectoryCard()<br/><small>components/bento/VerifiedDirectoryCard.tsx</small>")
+    src_app_companies_page_companiespage_c7677988 -->|calls| src_components_ads_adslot_adslot_da7a5cbe
+    src_app_dashboard_candidate_page_candidatedashbo_44951e6d -->|calls| src_components_bento_bentogrid_bentogrid_1e38596f
+    src_app_dashboard_candidate_page_candidatedashbo_44951e6d -->|calls| src_components_bento_bentocard_bentocard_c84d5f22
+    src_app_dashboard_employer_page_employerdashboar_ff302350 -->|calls| src_components_bento_bentogrid_bentogrid_1e38596f
+    src_app_dashboard_employer_page_employerdashboar_ff302350 -->|calls| src_components_bento_bentocard_bentocard_c84d5f22
+    src_app_page_homepage_7f863ba2 -->|calls| src_components_bento_bentocard_bentocard_c84d5f22
+    src_app_page_homepage_7f863ba2 -->|calls| src_components_bento_bentoherosearch_bentoherose_40592fbd
+    src_app_page_homepage_7f863ba2 -->|calls| src_components_bento_livepulseticker_livepulseti_1d092cfb
+    src_app_page_homepage_7f863ba2 -->|calls| src_components_bento_verifieddirectorycard_verif_6db14706
+    src_app_page_homepage_7f863ba2 -->|calls| src_components_bento_salarybenchmarkcard_salaryb_a251f54a
+    src_app_page_homepage_7f863ba2 -->|calls| src_components_ads_adslot_adslot_da7a5cbe
+    src_app_page_homepage_7f863ba2 -->|calls| src_components_bento_bentogrid_bentogrid_1e38596f
+    package_582681c2 -->|imports| ref_supabase_supabase_js_135d18c5
+    package_582681c2 -->|imports| ref_class_variance_authority_ccc2b2d1
+    src_app_companies_page_4e0d41ed -->|imports| src_components_ads_adslot_adslot_da7a5cbe
+    src_app_dashboard_candidate_page_b54ea9bb -->|imports| src_components_bento_bentogrid_bentogrid_1e38596f
+    src_app_dashboard_candidate_page_b54ea9bb -->|imports| src_components_bento_bentocard_bentocard_c84d5f22
+    src_app_dashboard_employer_page_8a971721 -->|imports| src_components_bento_bentogrid_bentogrid_1e38596f
+    src_app_dashboard_employer_page_8a971721 -->|imports| src_components_bento_bentocard_bentocard_c84d5f22
+    src_app_page_29d61f84 -->|imports| src_components_bento_verifieddirectorycard_verif_6db14706
+    src_app_page_29d61f84 -->|imports| src_components_ads_adslot_adslot_da7a5cbe
+    src_app_page_29d61f84 -->|imports| src_components_bento_bentogrid_bentogrid_1e38596f
+    src_app_page_29d61f84 -->|imports| src_components_bento_bentocard_bentocard_c84d5f22
+    src_app_page_29d61f84 -->|imports| src_components_bento_bentoherosearch_bentoherose_40592fbd
+    %% Omitted for readability: 203 nodes, 2 edges
+    class package_582681c2 function;
+    class ref_supabase_supabase_js_135d18c5 function;
+    class ref_class_variance_authority_ccc2b2d1 function;
+    class src_app_companies_page_4e0d41ed ui;
+    class src_app_companies_page_companiespage_c7677988 ui;
+    class src_app_dashboard_candidate_page_b54ea9bb ui;
+    class src_app_dashboard_candidate_page_candidatedashbo_44951e6d ui;
+    class src_app_dashboard_employer_page_8a971721 ui;
+    class src_app_dashboard_employer_page_employerdashboar_ff302350 ui;
+    class src_app_page_29d61f84 ui;
+    class src_app_page_homepage_7f863ba2 ui;
+    class src_components_ads_adslot_adslot_da7a5cbe ui;
+    class src_components_bento_bentocard_bentocard_c84d5f22 ui;
+    class src_components_bento_bentogrid_bentogrid_1e38596f ui;
+    class src_components_bento_bentoherosearch_bentoherose_40592fbd ui;
+    class src_components_bento_livepulseticker_livepulseti_1d092cfb ui;
+    class src_components_bento_salarybenchmarkcard_salaryb_a251f54a ui;
+    class src_components_bento_verifieddirectorycard_verif_6db14706 ui;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>AdSlotProps</code><br><small style="color:var(--muted)">components/ads/AdSlot.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>AdSlotProps node in components/ads/AdSlot.tsx.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>BentoCardProps</code><br><small style="color:var(--muted)">components/bento/BentoCard.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>BentoCardProps node in components/bento/BentoCard.tsx.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>BentoGridProps</code><br><small style="color:var(--muted)">components/bento/BentoGrid.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>BentoGridProps node in components/bento/BentoGrid.tsx.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>AboutUsPage()</code><br><small style="color:var(--muted)">app/about/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Organizes documentation pages, navigation, or content lookup.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>CompaniesPage()</code><br><small style="color:var(--muted)">app/companies/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>AdSlot()</code><br><small style="color:var(--muted)">components/ads/AdSlot.tsx</small></td>
+  <td>Organizes documentation pages, navigation, or content lookup.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>CandidateDashboardPage()</code><br><small style="color:var(--muted)">dashboard/candidate/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>BentoCard()</code><br><small style="color:var(--muted)">components/bento/BentoCard.tsx</small><br><code>BentoGrid()</code><br><small style="color:var(--muted)">components/bento/BentoGrid.tsx</small></td>
+  <td>Organizes documentation pages, navigation, or content lookup.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>EmployerDashboardPage()</code><br><small style="color:var(--muted)">dashboard/employer/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>BentoCard()</code><br><small style="color:var(--muted)">components/bento/BentoCard.tsx</small><br><code>BentoGrid()</code><br><small style="color:var(--muted)">components/bento/BentoGrid.tsx</small></td>
+  <td>Organizes documentation pages, navigation, or content lookup.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>GET()</code><br><small style="color:var(--muted)">app/llms.txt/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>GET() node in app/llms.txt/route.ts.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>HomePage()</code><br><small style="color:var(--muted)">src/app/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>AdSlot()</code><br><small style="color:var(--muted)">components/ads/AdSlot.tsx</small><br><code>BentoCard()</code><br><small style="color:var(--muted)">components/bento/BentoCard.tsx</small><br><code>BentoGrid()</code><br><small style="color:var(--muted)">components/bento/BentoGrid.tsx</small><br>+5 more</td>
+  <td>Organizes documentation pages, navigation, or content lookup.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>PrivacyPolicyPage()</code><br><small style="color:var(--muted)">app/privacy/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Organizes documentation pages, navigation, or content lookup.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>SafetyPage()</code><br><small style="color:var(--muted)">app/safety/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Organizes documentation pages, navigation, or content lookup.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>GET()</code><br><small style="color:var(--muted)">app/sitemap.xml/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>GET() node in app/sitemap.xml/route.ts.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>TermsOfServicePage()</code><br><small style="color:var(--muted)">app/terms/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Organizes documentation pages, navigation, or content lookup.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>AdSlot()</code><br><small style="color:var(--muted)">components/ads/AdSlot.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>CompaniesPage()</code><br><small style="color:var(--muted)">app/companies/page.tsx</small><br><code>HomePage()</code><br><small style="color:var(--muted)">src/app/page.tsx</small><br><code>JobDetailPage()</code><br><small style="color:var(--muted)">jobs/[slug]/page.tsx</small><br>+5 more</td>
+  <td>No direct outbound edge</td>
+  <td>AdSlot() node in components/ads/AdSlot.tsx.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>BentoCard()</code><br><small style="color:var(--muted)">components/bento/BentoCard.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>CandidateDashboardPage()</code><br><small style="color:var(--muted)">dashboard/candidate/page.tsx</small><br><code>EmployerDashboardPage()</code><br><small style="color:var(--muted)">dashboard/employer/page.tsx</small><br><code>HomePage()</code><br><small style="color:var(--muted)">src/app/page.tsx</small><br>+3 more</td>
+  <td><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>BentoCard() node in components/bento/BentoCard.tsx.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>BentoGrid()</code><br><small style="color:var(--muted)">components/bento/BentoGrid.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>CandidateDashboardPage()</code><br><small style="color:var(--muted)">dashboard/candidate/page.tsx</small><br><code>EmployerDashboardPage()</code><br><small style="color:var(--muted)">dashboard/employer/page.tsx</small><br><code>HomePage()</code><br><small style="color:var(--muted)">src/app/page.tsx</small><br>+3 more</td>
+  <td><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>BentoGrid() node in components/bento/BentoGrid.tsx.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>BentoHeroSearch()</code><br><small style="color:var(--muted)">components/bento/BentoHeroSearch.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>HomePage()</code><br><small style="color:var(--muted)">src/app/page.tsx</small><br><code>page.tsx</code><br><small style="color:var(--muted)">src/app/page.tsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>BentoHeroSearch() node in components/bento/BentoHeroSearch.tsx.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>LivePulseTicker()</code><br><small style="color:var(--muted)">components/bento/LivePulseTicker.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>HomePage()</code><br><small style="color:var(--muted)">src/app/page.tsx</small><br><code>page.tsx</code><br><small style="color:var(--muted)">src/app/page.tsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>LivePulseTicker() node in components/bento/LivePulseTicker.tsx.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>SalaryBenchmarkCard()</code><br><small style="color:var(--muted)">components/bento/SalaryBenchmarkCard.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>HomePage()</code><br><small style="color:var(--muted)">src/app/page.tsx</small><br><code>page.tsx</code><br><small style="color:var(--muted)">src/app/page.tsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>SalaryBenchmarkCard() node in components/bento/SalaryBenchmarkCard.tsx.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>VerifiedDirectoryCard()</code><br><small style="color:var(--muted)">components/bento/VerifiedDirectoryCard.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>HomePage()</code><br><small style="color:var(--muted)">src/app/page.tsx</small><br><code>page.tsx</code><br><small style="color:var(--muted)">src/app/page.tsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>VerifiedDirectoryCard() node in components/bento/VerifiedDirectoryCard.tsx.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>WhatsAppQuickApplyCard()</code><br><small style="color:var(--muted)">components/bento/WhatsAppQuickApplyCard.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>WhatsAppQuickApplyCard() node in components/bento/WhatsAppQuickApplyCard.tsx.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>about/page.tsx</code><br><small style="color:var(--muted)">app/about/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>lucide-react</code><br><small style="color:var(--muted)">package.json</small><br><code>next</code><br><small style="color:var(--muted)">package.json</small><br><code>react</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td>Module file in app/about/page.tsx.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>metadata</code><br><small style="color:var(--muted)">app/about/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>metadata node in app/about/page.tsx.</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>companies/page.tsx</code><br><small style="color:var(--muted)">app/companies/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>AdSlot()</code><br><small style="color:var(--muted)">components/ads/AdSlot.tsx</small><br><code>AdSlot.tsx</code><br><small style="color:var(--muted)">components/ads/AdSlot.tsx</small><br><code>data.ts</code><br><small style="color:var(--muted)">modules/jobs/data.ts</small><br>+5 more</td>
+  <td>Module file in app/companies/page.tsx.</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><code>metadata</code><br><small style="color:var(--muted)">app/companies/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>metadata node in app/companies/page.tsx.</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><code>candidate/page.tsx</code><br><small style="color:var(--muted)">dashboard/candidate/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>BentoCard()</code><br><small style="color:var(--muted)">components/bento/BentoCard.tsx</small><br><code>BentoCard.tsx</code><br><small style="color:var(--muted)">components/bento/BentoCard.tsx</small><br><code>BentoGrid()</code><br><small style="color:var(--muted)">components/bento/BentoGrid.tsx</small><br>+4 more</td>
+  <td>Module file in dashboard/candidate/page.tsx.</td>
+</tr>
+<tr>
+  <td>27</td>
+  <td><code>employer/page.tsx</code><br><small style="color:var(--muted)">dashboard/employer/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>BentoCard()</code><br><small style="color:var(--muted)">components/bento/BentoCard.tsx</small><br><code>BentoCard.tsx</code><br><small style="color:var(--muted)">components/bento/BentoCard.tsx</small><br><code>BentoGrid()</code><br><small style="color:var(--muted)">components/bento/BentoGrid.tsx</small><br>+10 more</td>
+  <td>Module file in dashboard/employer/page.tsx.</td>
+</tr>
+<tr>
+  <td>28</td>
+  <td><code>llms.txt/route.ts</code><br><small style="color:var(--muted)">app/llms.txt/route.ts</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>data.ts</code><br><small style="color:var(--muted)">modules/jobs/data.ts</small><br><code>next</code><br><small style="color:var(--muted)">package.json</small><br><code>SALARY_BENCHMARKS</code><br><small style="color:var(--muted)">modules/jobs/data.ts</small><br>+1 more</td>
+  <td>Module file in app/llms.txt/route.ts.</td>
+</tr>
+<tr>
+  <td>29</td>
+  <td><code>app/page.tsx</code><br><small style="color:var(--muted)">src/app/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>AdSlot()</code><br><small style="color:var(--muted)">components/ads/AdSlot.tsx</small><br><code>AdSlot.tsx</code><br><small style="color:var(--muted)">components/ads/AdSlot.tsx</small><br><code>BentoCard()</code><br><small style="color:var(--muted)">components/bento/BentoCard.tsx</small><br>+18 more</td>
+  <td>Module file in src/app/page.tsx.</td>
+</tr>
+<tr>
+  <td>30</td>
+  <td><code>privacy/page.tsx</code><br><small style="color:var(--muted)">app/privacy/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>lucide-react</code><br><small style="color:var(--muted)">package.json</small><br><code>next</code><br><small style="color:var(--muted)">package.json</small><br><code>react</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td>Module file in app/privacy/page.tsx.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>JobeeLanka_ Comparative Review and New Website Strategy.md</code></td><td>47 nodes</td></tr>
+<tr><td><code>package.json</code></td><td>43 nodes</td></tr>
+<tr><td><code>Lanka Careers &amp; Talents_ Job Portal Redesign and Growth Blueprint.md</code></td><td>40 nodes</td></tr>
+<tr><td><code>tsconfig.json</code></td><td>19 nodes</td></tr>
+<tr><td><code>scripts/generate-legacy-json.js</code></td><td>14 nodes</td></tr>
+<tr><td><code>modules/jobs/data.ts</code></td><td>4 nodes</td></tr>
+<tr><td><code>supabase/seed.js</code></td><td>4 nodes</td></tr>
+<tr><td><code>app/about/page.tsx</code></td><td>3 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x177, imports x53, imports x37, declares x15. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 3. Serving API ====== -->
+<h2 id="serve-api">3. Serving API</h2>
+<p>Serving API groups implementation around app, routets, api, modules, mostly in modules/jobs/types.ts, modules/auth/admin-auth.ts, modules/jobs/repository.ts. This section covers 121 nodes and 198 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Serving API (121 nodes, 198 edges)
+    subgraph serve_api_admin_staff_route_ts_00b41391["admin/staff/route.ts"]
+        src_app_api_v1_admin_staff_route_checkauth_2a2072e9("checkAuth()<br/><small>admin/staff/route.ts</small>")
+        src_app_api_v1_admin_staff_route_delete_b4747e08("DELETE()<br/><small>admin/staff/route.ts</small>")
+        src_app_api_v1_admin_staff_route_get_8a630b98("GET()<br/><small>admin/staff/route.ts</small>")
+        src_app_api_v1_admin_staff_route_post_f41ef29b("POST()<br/><small>admin/staff/route.ts</small>")
+    end
+    subgraph serve_api_modules_auth_admin_auth_ts_40252351["modules/auth/admin-auth.ts"]
+        src_modules_auth_admin_auth_verifyadminsessionto_f368f963("verifyAdminSessionToken()<br/><small>modules/auth/admin-auth.ts</small>")
+        src_modules_auth_admin_auth_verifyadmincredentia_e62dd5e7("verifyAdminCredentials()<br/><small>modules/auth/admin-auth.ts</small>")
+        src_modules_auth_admin_auth_createadminsessionto_8dfd83f1("createAdminSessionToken()<br/><small>modules/auth/admin-auth.ts</small>")
+        src_modules_auth_admin_auth_getauthorizedadmins_2a840de8("getAuthorizedAdmins()<br/><small>modules/auth/admin-auth.ts</small>")
+    end
+    subgraph serve_api_app_jobs_page_tsx_d3fc7286["app/jobs/page.tsx"]
+        src_app_jobs_page_cf172762("page.tsx")
+        src_app_jobs_page_jobspage_8f6ceda0("JobsPage()<br/><small>app/jobs/page.tsx</small>")
+        src_app_jobs_page_jobssearchcontent_32e508d3("JobsSearchContent()<br/><small>app/jobs/page.tsx</small>")
+    end
+    subgraph serve_api_auth_admin_route_ts_325793db["auth/admin/route.ts"]
+        src_app_api_v1_auth_admin_route_ebe2b2e4("route.ts")
+        src_app_api_v1_auth_admin_route_get_891db18f("GET()<br/><small>auth/admin/route.ts</small>")
+        src_app_api_v1_auth_admin_route_post_969e783d("POST()<br/><small>auth/admin/route.ts</small>")
+    end
+    src_app_post_a_listing_page_bb79a814("page.tsx")
+    src_app_api_v1_feeds_sync_route_8ebd2a60("route.ts")
+    src_app_layout_1fbe141c("layout.tsx")
+    src_app_api_v1_jobs_route_6ae57196("route.ts")
+    src_app_api_v1_admin_staff_route_checkauth_2a2072e9 -->|calls| src_modules_auth_admin_auth_verifyadminsessionto_f368f963
+    src_app_api_v1_admin_staff_route_delete_b4747e08 -->|calls| src_app_api_v1_admin_staff_route_checkauth_2a2072e9
+    src_app_api_v1_admin_staff_route_get_8a630b98 -->|calls| src_app_api_v1_admin_staff_route_checkauth_2a2072e9
+    src_app_api_v1_admin_staff_route_post_f41ef29b -->|calls| src_app_api_v1_admin_staff_route_checkauth_2a2072e9
+    src_app_api_v1_auth_admin_route_get_891db18f -->|calls| src_modules_auth_admin_auth_verifyadminsessionto_f368f963
+    src_app_api_v1_auth_admin_route_post_969e783d -->|calls| src_modules_auth_admin_auth_verifyadmincredentia_e62dd5e7
+    src_app_api_v1_auth_admin_route_post_969e783d -->|calls| src_modules_auth_admin_auth_createadminsessionto_8dfd83f1
+    src_modules_auth_admin_auth_verifyadmincredentia_e62dd5e7 -->|calls| src_modules_auth_admin_auth_getauthorizedadmins_2a840de8
+    src_modules_auth_admin_auth_verifyadminsessionto_f368f963 -->|calls| src_modules_auth_admin_auth_getauthorizedadmins_2a840de8
+    src_app_jobs_page_jobspage_8f6ceda0 -->|calls| src_app_jobs_page_jobssearchcontent_32e508d3
+    src_app_api_v1_auth_admin_route_ebe2b2e4 -->|imports| src_modules_auth_admin_auth_createadminsessionto_8dfd83f1
+    src_app_api_v1_auth_admin_route_ebe2b2e4 -->|imports| src_modules_auth_admin_auth_verifyadmincredentia_e62dd5e7
+    src_app_api_v1_auth_admin_route_ebe2b2e4 -->|imports| src_modules_auth_admin_auth_verifyadminsessionto_f368f963
+    %% Omitted for readability: 103 nodes, 0 edges
+    class src_app_api_v1_admin_staff_route_checkauth_2a2072e9 function;
+    class src_app_api_v1_admin_staff_route_delete_b4747e08 function;
+    class src_app_api_v1_admin_staff_route_get_8a630b98 function;
+    class src_app_api_v1_admin_staff_route_post_f41ef29b function;
+    class src_modules_auth_admin_auth_verifyadminsessionto_f368f963 function;
+    class src_modules_auth_admin_auth_verifyadmincredentia_e62dd5e7 function;
+    class src_modules_auth_admin_auth_createadminsessionto_8dfd83f1 function;
+    class src_modules_auth_admin_auth_getauthorizedadmins_2a840de8 function;
+    class src_app_jobs_page_cf172762 ui;
+    class src_app_jobs_page_jobspage_8f6ceda0 ui;
+    class src_app_jobs_page_jobssearchcontent_32e508d3 async;
+    class src_app_api_v1_auth_admin_route_ebe2b2e4 api;
+    class src_app_api_v1_auth_admin_route_get_891db18f function;
+    class src_app_api_v1_auth_admin_route_post_969e783d function;
+    class src_app_post_a_listing_page_bb79a814 ui;
+    class src_app_api_v1_feeds_sync_route_8ebd2a60 api;
+    class src_app_layout_1fbe141c ui;
+    class src_app_api_v1_jobs_route_6ae57196 api;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>RouteParams</code><br><small style="color:var(--muted)">employers/[id]/route.ts</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>RouteParams node in employers/[id]/route.ts.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>RouteParams</code><br><small style="color:var(--muted)">jobs/[id]/route.ts</small></td>
+  <td><span class="tag tag-endpoint">API</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>RouteParams node in jobs/[id]/route.ts.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>JobFiltersProps</code><br><small style="color:var(--muted)">components/jobs/JobFilters.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>JobFiltersProps node in components/jobs/JobFilters.tsx.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>CsvJobRow</code><br><small style="color:var(--muted)">modules/csv/csv-service.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>CsvJobRow node in modules/csv/csv-service.ts.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>ApplicationSubmission</code><br><small style="color:var(--muted)">modules/jobs/types.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>page.tsx</code><br><small style="color:var(--muted)">app/admin/page.tsx</small><br><code>repository.ts</code><br><small style="color:var(--muted)">modules/jobs/repository.ts</small></td>
+  <td>No direct outbound edge</td>
+  <td>ApplicationSubmission node in modules/jobs/types.ts.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>Employer</code><br><small style="color:var(--muted)">modules/jobs/types.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>csv-service.ts</code><br><small style="color:var(--muted)">modules/csv/csv-service.ts</small><br><code>data.ts</code><br><small style="color:var(--muted)">modules/jobs/data.ts</small><br><code>page.tsx</code><br><small style="color:var(--muted)">app/admin/page.tsx</small><br>+2 more</td>
+  <td>No direct outbound edge</td>
+  <td>Employer node in modules/jobs/types.ts.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>EmploymentType</code><br><small style="color:var(--muted)">modules/jobs/types.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>page.tsx</code><br><small style="color:var(--muted)">app/jobs/page.tsx</small><br><code>route.ts</code><br><small style="color:var(--muted)">v1/jobs/route.ts</small></td>
+  <td>No direct outbound edge</td>
+  <td>EmploymentType node in modules/jobs/types.ts.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>JobSourceType</code><br><small style="color:var(--muted)">modules/jobs/types.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>JobSourceType node in modules/jobs/types.ts.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>ListingType</code><br><small style="color:var(--muted)">modules/jobs/types.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>page.tsx</code><br><small style="color:var(--muted)">app/post-a-listing/page.tsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>ListingType node in modules/jobs/types.ts.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>SearchFacetFilters</code><br><small style="color:var(--muted)">modules/jobs/types.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>JobFilters.tsx</code><br><small style="color:var(--muted)">components/jobs/JobFilters.tsx</small><br><code>page.tsx</code><br><small style="color:var(--muted)">app/jobs/page.tsx</small><br><code>repository.ts</code><br><small style="color:var(--muted)">modules/jobs/repository.ts</small></td>
+  <td>No direct outbound edge</td>
+  <td>SearchFacetFilters node in modules/jobs/types.ts.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>VerificationStatus</code><br><small style="color:var(--muted)">modules/jobs/types.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>VerificationStatus node in modules/jobs/types.ts.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>WorkMode</code><br><small style="color:var(--muted)">modules/jobs/types.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>JobFilters.tsx</code><br><small style="color:var(--muted)">components/jobs/JobFilters.tsx</small><br><code>page.tsx</code><br><small style="color:var(--muted)">app/jobs/page.tsx</small><br><code>route.ts</code><br><small style="color:var(--muted)">v1/jobs/route.ts</small></td>
+  <td>No direct outbound edge</td>
+  <td>WorkMode node in modules/jobs/types.ts.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>PATCH()</code><br><small style="color:var(--muted)">applications/[id]/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>PATCH() node in applications/[id]/route.ts.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>GET()</code><br><small style="color:var(--muted)">v1/applications/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>GET() node in v1/applications/route.ts.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>POST()</code><br><small style="color:var(--muted)">v1/applications/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>POST() node in v1/applications/route.ts.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>DELETE()</code><br><small style="color:var(--muted)">employers/[id]/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>DELETE() node in employers/[id]/route.ts.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>GET()</code><br><small style="color:var(--muted)">employers/[id]/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>GET() node in employers/[id]/route.ts.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>PATCH()</code><br><small style="color:var(--muted)">employers/[id]/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>PATCH() node in employers/[id]/route.ts.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>GET()</code><br><small style="color:var(--muted)">v1/employers/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>GET() node in v1/employers/route.ts.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>POST()</code><br><small style="color:var(--muted)">feeds/itpro/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>POST() node in feeds/itpro/route.ts.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>GET()</code><br><small style="color:var(--muted)">jobs/csv/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>GET() node in jobs/csv/route.ts.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>POST()</code><br><small style="color:var(--muted)">jobs/csv/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>POST() node in jobs/csv/route.ts.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>DELETE()</code><br><small style="color:var(--muted)">jobs/[id]/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>DELETE() node in jobs/[id]/route.ts.</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>GET()</code><br><small style="color:var(--muted)">jobs/[id]/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>GET() node in jobs/[id]/route.ts.</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><code>PATCH()</code><br><small style="color:var(--muted)">jobs/[id]/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>PATCH() node in jobs/[id]/route.ts.</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><code>GET()</code><br><small style="color:var(--muted)">v1/jobs/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>GET() node in v1/jobs/route.ts.</td>
+</tr>
+<tr>
+  <td>27</td>
+  <td><code>POST()</code><br><small style="color:var(--muted)">v1/jobs/route.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>POST() node in v1/jobs/route.ts.</td>
+</tr>
+<tr>
+  <td>28</td>
+  <td><code>JobsPage()</code><br><small style="color:var(--muted)">app/jobs/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>JobsSearchContent()</code><br><small style="color:var(--muted)">app/jobs/page.tsx</small></td>
+  <td>Organizes documentation pages, navigation, or content lookup.</td>
+</tr>
+<tr>
+  <td>29</td>
+  <td><code>JobsSearchContent()</code><br><small style="color:var(--muted)">app/jobs/page.tsx</small></td>
+  <td><span class="tag tag-async">Async</span></td>
+  <td><code>JobsPage()</code><br><small style="color:var(--muted)">app/jobs/page.tsx</small></td>
+  <td><code>AdSlot()</code><br><small style="color:var(--muted)">components/ads/AdSlot.tsx</small><br><code>ApplyModal()</code><br><small style="color:var(--muted)">components/jobs/ApplyModal.tsx</small><br><code>JobCard()</code><br><small style="color:var(--muted)">components/jobs/JobCard.tsx</small><br>+1 more</td>
+  <td>JobsSearchContent() node in app/jobs/page.tsx.</td>
+</tr>
+<tr>
+  <td>30</td>
+  <td><code>PostListingPage()</code><br><small style="color:var(--muted)">app/post-a-listing/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Organizes documentation pages, navigation, or content lookup.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>modules/jobs/types.ts</code></td><td>9 nodes</td></tr>
+<tr><td><code>modules/auth/admin-auth.ts</code></td><td>8 nodes</td></tr>
+<tr><td><code>admin/staff/route.ts</code></td><td>6 nodes</td></tr>
+<tr><td><code>modules/feeds/rss-parser.ts</code></td><td>6 nodes</td></tr>
+<tr><td><code>modules/jobs/repository.ts</code></td><td>6 nodes</td></tr>
+<tr><td><code>employers/[id]/route.ts</code></td><td>5 nodes</td></tr>
+<tr><td><code>jobs/[id]/route.ts</code></td><td>5 nodes</td></tr>
+<tr><td><code>src/app/layout.tsx</code></td><td>5 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x81, imports x55, imports x44, calls x15. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 4. Tests & Fixtures ====== -->
+<h2 id="tests-fixtures">4. Tests &amp; Fixtures</h2>
+<p>Tests &amp; Fixtures groups implementation around tests, live, integrationtestjs, assert, mostly in tests/live-integration.test.js, tests/csv-service.test.js, tests/seo-redirects.test.js. This section covers 28 nodes and 33 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Tests &amp; Fixtures (28 nodes, 33 edges)
+    subgraph tests_fixtures_External_generated_473753cb["External / generated"]
+        ref_node_test_8d892955("ref_node_test")
+        ref_node_assert_d11c978e("ref_node_assert")
+        ref_node_fs_b768bf73("ref_node_fs")
+        ref_node_path_350e6c64("ref_node_path")
+        data_legacy_jobs_8a4fbd1d("data_legacy_jobs")
+        ref_node_http_8d4471e5("ref_node_http")
+    end
+    subgraph tests_fixtures_tests_csv_service_test_js_e17c361d["tests/csv-service.test.js"]
+        tests_csv_service_test_53e7820c("csv-service.test.js")
+        tests_csv_service_test_assert_af713d80("assert<br/><small>tests/csv-service.test.js</small>")
+        tests_csv_service_test_fs_7ef47f39("fs<br/><small>tests/csv-service.test.js</small>")
+        tests_csv_service_test_path_95546bb3("path<br/><small>tests/csv-service.test.js</small>")
+        tests_csv_service_test_test_b6993c98("test<br/><small>tests/csv-service.test.js</small>")
+    end
+    subgraph tests_fixtures_tests_admin_auth_test_js_2ed84085["tests/admin-auth.test.js"]
+        tests_admin_auth_test_4d9d812a("admin-auth.test.js")
+        tests_admin_auth_test_assert_639c14fc("assert<br/><small>tests/admin-auth.test.js</small>")
+        tests_admin_auth_test_test_describe_9f51ac6e("test, describe<br/><small>tests/admin-auth.test.js</small>")
+    end
+    subgraph tests_fixtures_tests_jobs_repository_test_js_17374dae["tests/jobs-repository.test.js"]
+        tests_jobs_repository_test_bdf9d234("jobs-repository.test.js")
+        tests_jobs_repository_test_assert_c0c2b9a7("assert<br/><small>tests/jobs-repository.test.js</small>")
+    end
+    tests_live_integration_test_81e11560("live-integration.test.js")
+    tests_seo_redirects_test_42c70e8d("seo-redirects.test.js")
+    tests_admin_auth_test_4d9d812a -->|imports| ref_node_test_8d892955
+    tests_admin_auth_test_4d9d812a -->|imports| ref_node_assert_d11c978e
+    tests_csv_service_test_53e7820c -->|imports| ref_node_test_8d892955
+    tests_csv_service_test_53e7820c -->|imports| ref_node_assert_d11c978e
+    tests_csv_service_test_53e7820c -->|imports| ref_node_fs_b768bf73
+    tests_csv_service_test_53e7820c -->|imports| ref_node_path_350e6c64
+    tests_jobs_repository_test_bdf9d234 -->|imports| ref_node_test_8d892955
+    tests_jobs_repository_test_bdf9d234 -->|imports| ref_node_assert_d11c978e
+    tests_jobs_repository_test_bdf9d234 -->|imports| data_legacy_jobs_8a4fbd1d
+    tests_live_integration_test_81e11560 -->|imports| ref_node_test_8d892955
+    tests_live_integration_test_81e11560 -->|imports| ref_node_assert_d11c978e
+    tests_live_integration_test_81e11560 -->|imports| ref_node_http_8d4471e5
+    tests_seo_redirects_test_42c70e8d -->|imports| ref_node_test_8d892955
+    tests_seo_redirects_test_42c70e8d -->|imports| ref_node_assert_d11c978e
+    tests_seo_redirects_test_42c70e8d -->|imports| ref_node_fs_b768bf73
+    tests_seo_redirects_test_42c70e8d -->|imports| ref_node_path_350e6c64
+    %% Omitted for readability: 10 nodes, 0 edges
+    class ref_node_test_8d892955 function;
+    class ref_node_assert_d11c978e async;
+    class ref_node_fs_b768bf73 function;
+    class ref_node_path_350e6c64 function;
+    class data_legacy_jobs_8a4fbd1d function;
+    class ref_node_http_8d4471e5 function;
+    class tests_csv_service_test_53e7820c test;
+    class tests_csv_service_test_assert_af713d80 test;
+    class tests_csv_service_test_fs_7ef47f39 test;
+    class tests_csv_service_test_path_95546bb3 test;
+    class tests_csv_service_test_test_b6993c98 test;
+    class tests_admin_auth_test_4d9d812a test;
+    class tests_admin_auth_test_assert_639c14fc test;
+    class tests_admin_auth_test_test_describe_9f51ac6e test;
+    class tests_jobs_repository_test_bdf9d234 test;
+    class tests_jobs_repository_test_assert_c0c2b9a7 test;
+    class tests_live_integration_test_81e11560 test;
+    class tests_seo_redirects_test_42c70e8d test;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>fetchJson()</code><br><small style="color:var(--muted)">tests/live-integration.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>fetchJson() node in tests/live-integration.test.js.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>fetchText()</code><br><small style="color:var(--muted)">tests/live-integration.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>fetchText() node in tests/live-integration.test.js.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>admin-auth.test.js</code><br><small style="color:var(--muted)">tests/admin-auth.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>ref_node_assert</code><br><code>ref_node_test</code></td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>assert</code><br><small style="color:var(--muted)">tests/admin-auth.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>assert node in tests/admin-auth.test.js.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>{ test, describe }</code><br><small style="color:var(--muted)">tests/admin-auth.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>csv-service.test.js</code><br><small style="color:var(--muted)">tests/csv-service.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>ref_node_assert</code><br><code>ref_node_fs</code><br><code>ref_node_path</code><br>+1 more</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>assert</code><br><small style="color:var(--muted)">tests/csv-service.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>assert node in tests/csv-service.test.js.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>fs</code><br><small style="color:var(--muted)">tests/csv-service.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>fs node in tests/csv-service.test.js.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>path</code><br><small style="color:var(--muted)">tests/csv-service.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>path node in tests/csv-service.test.js.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>test</code><br><small style="color:var(--muted)">tests/csv-service.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>jobs-repository.test.js</code><br><small style="color:var(--muted)">tests/jobs-repository.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>data_legacy_jobs</code><br><code>ref_node_assert</code><br><code>ref_node_test</code></td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>assert</code><br><small style="color:var(--muted)">tests/jobs-repository.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>assert node in tests/jobs-repository.test.js.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>test</code><br><small style="color:var(--muted)">tests/jobs-repository.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>live-integration.test.js</code><br><small style="color:var(--muted)">tests/live-integration.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>ref_node_assert</code><br><code>ref_node_http</code><br><code>ref_node_test</code></td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>assert</code><br><small style="color:var(--muted)">tests/live-integration.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>assert node in tests/live-integration.test.js.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>http</code><br><small style="color:var(--muted)">tests/live-integration.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>http node in tests/live-integration.test.js.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>test</code><br><small style="color:var(--muted)">tests/live-integration.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>seo-redirects.test.js</code><br><small style="color:var(--muted)">tests/seo-redirects.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>ref_node_assert</code><br><code>ref_node_fs</code><br><code>ref_node_path</code><br>+1 more</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>assert</code><br><small style="color:var(--muted)">tests/seo-redirects.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>assert node in tests/seo-redirects.test.js.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>fs</code><br><small style="color:var(--muted)">tests/seo-redirects.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>fs node in tests/seo-redirects.test.js.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>path</code><br><small style="color:var(--muted)">tests/seo-redirects.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>path node in tests/seo-redirects.test.js.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>test</code><br><small style="color:var(--muted)">tests/seo-redirects.test.js</small></td>
+  <td><span class="tag tag-func">Test</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>data_legacy_jobs</code><br><small style="color:var(--muted)"></small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>jobs-repository.test.js</code><br><small style="color:var(--muted)">tests/jobs-repository.test.js</small><br><code>repository.ts</code><br><small style="color:var(--muted)">modules/jobs/repository.ts</small></td>
+  <td>No direct outbound edge</td>
+  <td>data_legacy_jobs node in project.</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>ref_node_assert</code><br><small style="color:var(--muted)"></small></td>
+  <td><span class="tag tag-async">Async</span></td>
+  <td><code>admin-auth.test.js</code><br><small style="color:var(--muted)">tests/admin-auth.test.js</small><br><code>csv-service.test.js</code><br><small style="color:var(--muted)">tests/csv-service.test.js</small><br><code>jobs-repository.test.js</code><br><small style="color:var(--muted)">tests/jobs-repository.test.js</small><br>+2 more</td>
+  <td>No direct outbound edge</td>
+  <td>ref_node_assert node in project.</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><code>ref_node_fs</code><br><small style="color:var(--muted)"></small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>csv-service.test.js</code><br><small style="color:var(--muted)">tests/csv-service.test.js</small><br><code>seo-redirects.test.js</code><br><small style="color:var(--muted)">tests/seo-redirects.test.js</small></td>
+  <td>No direct outbound edge</td>
+  <td>ref_node_fs node in project.</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><code>ref_node_http</code><br><small style="color:var(--muted)"></small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>live-integration.test.js</code><br><small style="color:var(--muted)">tests/live-integration.test.js</small></td>
+  <td>No direct outbound edge</td>
+  <td>ref_node_http node in project.</td>
+</tr>
+<tr>
+  <td>27</td>
+  <td><code>ref_node_path</code><br><small style="color:var(--muted)"></small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>csv-service.test.js</code><br><small style="color:var(--muted)">tests/csv-service.test.js</small><br><code>seo-redirects.test.js</code><br><small style="color:var(--muted)">tests/seo-redirects.test.js</small></td>
+  <td>No direct outbound edge</td>
+  <td>ref_node_path node in project.</td>
+</tr>
+<tr>
+  <td>28</td>
+  <td><code>ref_node_test</code><br><small style="color:var(--muted)"></small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>admin-auth.test.js</code><br><small style="color:var(--muted)">tests/admin-auth.test.js</small><br><code>csv-service.test.js</code><br><small style="color:var(--muted)">tests/csv-service.test.js</small><br><code>jobs-repository.test.js</code><br><small style="color:var(--muted)">tests/jobs-repository.test.js</small><br>+2 more</td>
+  <td>No direct outbound edge</td>
+  <td>Verifies imports, entry points, or version behavior.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>tests/live-integration.test.js</code></td><td>6 nodes</td></tr>
+<tr><td><code>tests/csv-service.test.js</code></td><td>5 nodes</td></tr>
+<tr><td><code>tests/seo-redirects.test.js</code></td><td>5 nodes</td></tr>
+<tr><td><code>tests/admin-auth.test.js</code></td><td>3 nodes</td></tr>
+<tr><td><code>tests/jobs-repository.test.js</code></td><td>3 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x17, imports x16. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 5. Jobs Components Admin ====== -->
+<h2 id="jobs-components-admin">5. Jobs Components Admin</h2>
+<p>Jobs Components Admin groups implementation around jobs, components, admin, pagetsx, mostly in modules/admin/data.ts, jobs/[slug]/page.tsx, components/ui/badge.tsx. This section covers 32 nodes and 72 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Jobs Components Admin (32 nodes, 72 edges)
+    subgraph jobs_components_admin_src_lib_utils_ts_9beb9489["src/lib/utils.ts"]
+        src_lib_utils_formatdaterelative_34855202("formatDateRelative()<br/><small>src/lib/utils.ts</small>")
+        src_lib_utils_formatcurrency_d5948297("formatCurrency()<br/><small>src/lib/utils.ts</small>")
+        src_lib_utils_buildwhatsappurl_314d8039("buildWhatsAppUrl()<br/><small>src/lib/utils.ts</small>")
+    end
+    subgraph jobs_components_admin_app_admin_page_tsx_9f269db8["app/admin/page.tsx"]
+        src_app_admin_page_2b634994("page.tsx")
+        src_app_admin_page_adminportalpage_e91e63f0("AdminPortalPage()<br/><small>app/admin/page.tsx</small>")
+    end
+    subgraph jobs_components_admin_components_jobs_JobCard_ts_dba6ce1b["components/jobs/JobCard.tsx"]
+        src_components_jobs_jobcard_d45f7817("JobCard.tsx")
+        src_components_jobs_jobcard_jobcard_0e0f0863("JobCard()<br/><small>components/jobs/JobCard.tsx</small>")
+    end
+    subgraph jobs_components_admin_components_ui_badge_tsx_1a28d1e7["components/ui/badge.tsx"]
+        src_components_ui_badge_badge_b26c0126("Badge()<br/><small>components/ui/badge.tsx</small>")
+        src_components_ui_badge_badgevariants_8059c997("badgeVariants<br/><small>components/ui/badge.tsx</small>")
+    end
+    subgraph jobs_components_admin_jobs_slug_page_tsx_784d1610["jobs/[slug]/page.tsx"]
+        src_app_jobs_slug_page_f13f3ee7("page.tsx")
+        src_app_jobs_slug_page_jobdetailpage_c74c5707("JobDetailPage()<br/><small>jobs/[slug]/page.tsx</small>")
+    end
+    subgraph jobs_components_admin_modules_admin_data_ts_6790a1a5["modules/admin/data.ts"]
+        src_modules_admin_data_moderationitem_6f0dec71("ModerationItem<br/><small>modules/admin/data.ts</small>")
+        src_modules_admin_data_seed_admin_and_staff_62b949d5("SEED_ADMIN_AND_STAFF<br/><small>modules/admin/data.ts</small>")
+    end
+    subgraph jobs_components_admin_src_lib_seo_ts_49a15ac1["src/lib/seo.ts"]
+        src_lib_seo_generatejobpostingschema_4d2e3a67("generateJobPostingSchema()<br/><small>src/lib/seo.ts</small>")
+        src_lib_seo_generatebreadcrumbschema_e04c2195("generateBreadcrumbSchema()<br/><small>src/lib/seo.ts</small>")
+    end
+    src_components_jobs_applymodal_71342ef5("ApplyModal.tsx")
+    src_components_jobs_directemployerapplybox_direc_b25ede40("DirectEmployerApplyBox()<br/><small>components/jobs/DirectEmployerApplyBox.tsx</small>")
+    src_modules_jobs_types_job_959ef97d("Job<br/><small>modules/jobs/types.ts</small>")
+    src_app_admin_page_adminportalpage_e91e63f0 -->|calls| src_lib_utils_formatdaterelative_34855202
+    src_app_jobs_slug_page_jobdetailpage_c74c5707 -->|calls| src_lib_utils_formatcurrency_d5948297
+    src_app_jobs_slug_page_jobdetailpage_c74c5707 -->|calls| src_components_jobs_directemployerapplybox_direc_b25ede40
+    src_app_jobs_slug_page_jobdetailpage_c74c5707 -->|calls| src_lib_seo_generatejobpostingschema_4d2e3a67
+    src_app_jobs_slug_page_jobdetailpage_c74c5707 -->|calls| src_lib_seo_generatebreadcrumbschema_e04c2195
+    src_app_jobs_slug_page_jobdetailpage_c74c5707 -->|calls| src_lib_utils_buildwhatsappurl_314d8039
+    src_app_jobs_slug_page_jobdetailpage_c74c5707 -->|calls| src_lib_utils_formatdaterelative_34855202
+    src_components_jobs_directemployerapplybox_direc_b25ede40 -->|calls| src_lib_utils_buildwhatsappurl_314d8039
+    src_components_jobs_jobcard_jobcard_0e0f0863 -->|calls| src_components_ui_badge_badge_b26c0126
+    src_components_jobs_jobcard_jobcard_0e0f0863 -->|calls| src_lib_utils_formatcurrency_d5948297
+    src_components_jobs_jobcard_jobcard_0e0f0863 -->|calls| src_lib_utils_buildwhatsappurl_314d8039
+    src_components_jobs_jobcard_jobcard_0e0f0863 -->|calls| src_lib_utils_formatdaterelative_34855202
+    src_components_ui_badge_badge_b26c0126 -->|calls| src_components_ui_badge_badgevariants_8059c997
+    src_app_admin_page_2b634994 -->|imports| src_modules_jobs_types_job_959ef97d
+    src_app_admin_page_2b634994 -->|imports| src_modules_admin_data_moderationitem_6f0dec71
+    src_app_admin_page_2b634994 -->|imports| src_modules_admin_data_seed_admin_and_staff_62b949d5
+    src_app_admin_page_2b634994 -->|imports| src_lib_utils_buildwhatsappurl_314d8039
+    src_app_admin_page_2b634994 -->|imports| src_lib_utils_formatcurrency_d5948297
+    src_app_admin_page_2b634994 -->|imports| src_lib_utils_formatdaterelative_34855202
+    src_app_jobs_slug_page_f13f3ee7 -->|imports| src_lib_seo_generatebreadcrumbschema_e04c2195
+    src_app_jobs_slug_page_f13f3ee7 -->|imports| src_lib_seo_generatejobpostingschema_4d2e3a67
+    src_app_jobs_slug_page_f13f3ee7 -->|imports| src_lib_utils_buildwhatsappurl_314d8039
+    src_app_jobs_slug_page_f13f3ee7 -->|imports| src_lib_utils_formatcurrency_d5948297
+    src_app_jobs_slug_page_f13f3ee7 -->|imports| src_lib_utils_formatdaterelative_34855202
+    %% Omitted for readability: 14 nodes, 8 edges
+    class src_lib_utils_formatdaterelative_34855202 function;
+    class src_lib_utils_formatcurrency_d5948297 function;
+    class src_lib_utils_buildwhatsappurl_314d8039 function;
+    class src_app_admin_page_2b634994 ui;
+    class src_app_admin_page_adminportalpage_e91e63f0 ui;
+    class src_components_jobs_jobcard_d45f7817 ui;
+    class src_components_jobs_jobcard_jobcard_0e0f0863 ui;
+    class src_components_ui_badge_badge_b26c0126 ui;
+    class src_components_ui_badge_badgevariants_8059c997 ui;
+    class src_app_jobs_slug_page_f13f3ee7 ui;
+    class src_app_jobs_slug_page_jobdetailpage_c74c5707 ui;
+    class src_modules_admin_data_moderationitem_6f0dec71 klass;
+    class src_modules_admin_data_seed_admin_and_staff_62b949d5 klass;
+    class src_lib_seo_generatejobpostingschema_4d2e3a67 function;
+    class src_lib_seo_generatebreadcrumbschema_e04c2195 function;
+    class src_components_jobs_applymodal_71342ef5 ui;
+    class src_components_jobs_directemployerapplybox_direc_b25ede40 ui;
+    class src_modules_jobs_types_job_959ef97d klass;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>AdminTab</code><br><small style="color:var(--muted)">app/admin/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>AdminTab node in app/admin/page.tsx.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>JobDetailPageProps</code><br><small style="color:var(--muted)">jobs/[slug]/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Organizes documentation pages, navigation, or content lookup.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>ApplyModalProps</code><br><small style="color:var(--muted)">components/jobs/ApplyModal.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>ApplyModalProps node in components/jobs/ApplyModal.tsx.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>DirectEmployerApplyBoxProps</code><br><small style="color:var(--muted)">components/jobs/DirectEmployerApplyBox.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>DirectEmployerApplyBoxProps node in components/jobs/DirectEmployerApplyBox.tsx.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>JobCardProps</code><br><small style="color:var(--muted)">components/jobs/JobCard.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>JobCardProps node in components/jobs/JobCard.tsx.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>BadgeProps</code><br><small style="color:var(--muted)">components/ui/badge.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>BadgeProps node in components/ui/badge.tsx.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>ModerationItem</code><br><small style="color:var(--muted)">modules/admin/data.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>page.tsx</code><br><small style="color:var(--muted)">app/admin/page.tsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>ModerationItem node in modules/admin/data.ts.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>StaffUser</code><br><small style="color:var(--muted)">modules/admin/data.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>page.tsx</code><br><small style="color:var(--muted)">app/admin/page.tsx</small><br><code>route.ts</code><br><small style="color:var(--muted)">admin/staff/route.ts</small></td>
+  <td>No direct outbound edge</td>
+  <td>StaffUser node in modules/admin/data.ts.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>Job</code><br><small style="color:var(--muted)">modules/jobs/types.ts</small></td>
+  <td><span class="tag tag-class">Class</span></td>
+  <td><code>ApplyModal.tsx</code><br><small style="color:var(--muted)">components/jobs/ApplyModal.tsx</small><br><code>csv-service.ts</code><br><small style="color:var(--muted)">modules/csv/csv-service.ts</small><br><code>data.ts</code><br><small style="color:var(--muted)">modules/jobs/data.ts</small><br>+7 more</td>
+  <td>No direct outbound edge</td>
+  <td>Job node in modules/jobs/types.ts.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>AdminPortalPage()</code><br><small style="color:var(--muted)">app/admin/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>formatDateRelative()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>Organizes documentation pages, navigation, or content lookup.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>generateMetadata()</code><br><small style="color:var(--muted)">jobs/[slug]/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>generateMetadata() node in jobs/[slug]/page.tsx.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>JobDetailPage()</code><br><small style="color:var(--muted)">jobs/[slug]/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>AdSlot()</code><br><small style="color:var(--muted)">components/ads/AdSlot.tsx</small><br><code>buildWhatsAppUrl()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small><br><code>DirectEmployerApplyBox()</code><br><small style="color:var(--muted)">components/jobs/DirectEmployerApplyBox.tsx</small><br>+4 more</td>
+  <td>Organizes documentation pages, navigation, or content lookup.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>DirectEmployerApplyBox()</code><br><small style="color:var(--muted)">components/jobs/DirectEmployerApplyBox.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>JobDetailPage()</code><br><small style="color:var(--muted)">jobs/[slug]/page.tsx</small><br><code>page.tsx</code><br><small style="color:var(--muted)">jobs/[slug]/page.tsx</small></td>
+  <td><code>buildWhatsAppUrl()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>DirectEmployerApplyBox() node in components/jobs/DirectEmployerApplyBox.tsx.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>JobCard()</code><br><small style="color:var(--muted)">components/jobs/JobCard.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>HomePage()</code><br><small style="color:var(--muted)">src/app/page.tsx</small><br><code>JobsSearchContent()</code><br><small style="color:var(--muted)">app/jobs/page.tsx</small><br><code>page.tsx</code><br><small style="color:var(--muted)">src/app/page.tsx</small><br>+1 more</td>
+  <td><code>Badge()</code><br><small style="color:var(--muted)">components/ui/badge.tsx</small><br><code>buildWhatsAppUrl()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small><br><code>formatCurrency()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small><br>+1 more</td>
+  <td>JobCard() node in components/jobs/JobCard.tsx.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>Badge()</code><br><small style="color:var(--muted)">components/ui/badge.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>JobCard()</code><br><small style="color:var(--muted)">components/jobs/JobCard.tsx</small><br><code>JobCard.tsx</code><br><small style="color:var(--muted)">components/jobs/JobCard.tsx</small></td>
+  <td><code>badgeVariants</code><br><small style="color:var(--muted)">components/ui/badge.tsx</small><br><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>Badge() node in components/ui/badge.tsx.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>generateBreadcrumbSchema()</code><br><small style="color:var(--muted)">src/lib/seo.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>JobDetailPage()</code><br><small style="color:var(--muted)">jobs/[slug]/page.tsx</small><br><code>page.tsx</code><br><small style="color:var(--muted)">jobs/[slug]/page.tsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>generateBreadcrumbSchema() node in src/lib/seo.ts.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>generateJobPostingSchema()</code><br><small style="color:var(--muted)">src/lib/seo.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>JobDetailPage()</code><br><small style="color:var(--muted)">jobs/[slug]/page.tsx</small><br><code>page.tsx</code><br><small style="color:var(--muted)">jobs/[slug]/page.tsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>generateJobPostingSchema() node in src/lib/seo.ts.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>buildWhatsAppUrl()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>ApplyModal()</code><br><small style="color:var(--muted)">components/jobs/ApplyModal.tsx</small><br><code>ApplyModal.tsx</code><br><small style="color:var(--muted)">components/jobs/ApplyModal.tsx</small><br><code>DirectEmployerApplyBox()</code><br><small style="color:var(--muted)">components/jobs/DirectEmployerApplyBox.tsx</small><br>+6 more</td>
+  <td>No direct outbound edge</td>
+  <td>buildWhatsAppUrl() node in src/lib/utils.ts.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>formatCurrency()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>JobCard()</code><br><small style="color:var(--muted)">components/jobs/JobCard.tsx</small><br><code>JobCard.tsx</code><br><small style="color:var(--muted)">components/jobs/JobCard.tsx</small><br><code>JobDetailPage()</code><br><small style="color:var(--muted)">jobs/[slug]/page.tsx</small><br>+3 more</td>
+  <td>No direct outbound edge</td>
+  <td>formatCurrency() node in src/lib/utils.ts.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>formatDateRelative()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>AdminPortalPage()</code><br><small style="color:var(--muted)">app/admin/page.tsx</small><br><code>JobCard()</code><br><small style="color:var(--muted)">components/jobs/JobCard.tsx</small><br><code>JobCard.tsx</code><br><small style="color:var(--muted)">components/jobs/JobCard.tsx</small><br>+3 more</td>
+  <td>No direct outbound edge</td>
+  <td>formatDateRelative() node in src/lib/utils.ts.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>admin/page.tsx</code><br><small style="color:var(--muted)">app/admin/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>ApplicationSubmission</code><br><small style="color:var(--muted)">modules/jobs/types.ts</small><br><code>buildWhatsAppUrl()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small><br><code>data.ts</code><br><small style="color:var(--muted)">modules/admin/data.ts</small><br>+16 more</td>
+  <td>Module file in app/admin/page.tsx.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>[slug]/page.tsx</code><br><small style="color:var(--muted)">jobs/[slug]/page.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>AdSlot()</code><br><small style="color:var(--muted)">components/ads/AdSlot.tsx</small><br><code>AdSlot.tsx</code><br><small style="color:var(--muted)">components/ads/AdSlot.tsx</small><br><code>buildWhatsAppUrl()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small><br>+13 more</td>
+  <td>Module file in jobs/[slug]/page.tsx.</td>
+</tr>
+<tr>
+  <td>23</td>
+  <td><code>ApplyModal.tsx</code><br><small style="color:var(--muted)">components/jobs/ApplyModal.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>page.tsx</code><br><small style="color:var(--muted)">app/jobs/page.tsx</small></td>
+  <td><code>buildWhatsAppUrl()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small><br><code>Job</code><br><small style="color:var(--muted)">modules/jobs/types.ts</small><br><code>lucide-react</code><br><small style="color:var(--muted)">package.json</small><br>+4 more</td>
+  <td>Module file in components/jobs/ApplyModal.tsx.</td>
+</tr>
+<tr>
+  <td>24</td>
+  <td><code>DirectEmployerApplyBox.tsx</code><br><small style="color:var(--muted)">components/jobs/DirectEmployerApplyBox.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>page.tsx</code><br><small style="color:var(--muted)">jobs/[slug]/page.tsx</small></td>
+  <td><code>buildWhatsAppUrl()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small><br><code>Job</code><br><small style="color:var(--muted)">modules/jobs/types.ts</small><br><code>lucide-react</code><br><small style="color:var(--muted)">package.json</small><br>+4 more</td>
+  <td>Module file in components/jobs/DirectEmployerApplyBox.tsx.</td>
+</tr>
+<tr>
+  <td>25</td>
+  <td><code>JobCard.tsx</code><br><small style="color:var(--muted)">components/jobs/JobCard.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>page.tsx</code><br><small style="color:var(--muted)">src/app/page.tsx</small><br><code>page.tsx</code><br><small style="color:var(--muted)">app/jobs/page.tsx</small></td>
+  <td><code>Badge()</code><br><small style="color:var(--muted)">components/ui/badge.tsx</small><br><code>badge.tsx</code><br><small style="color:var(--muted)">components/ui/badge.tsx</small><br><code>buildWhatsAppUrl()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small><br>+8 more</td>
+  <td>Module file in components/jobs/JobCard.tsx.</td>
+</tr>
+<tr>
+  <td>26</td>
+  <td><code>badge.tsx</code><br><small style="color:var(--muted)">components/ui/badge.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>JobCard.tsx</code><br><small style="color:var(--muted)">components/jobs/JobCard.tsx</small></td>
+  <td><code>class-variance-authority</code><br><small style="color:var(--muted)">package.json</small><br><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small><br><code>react</code><br><small style="color:var(--muted)">package.json</small><br>+1 more</td>
+  <td>Module file in components/ui/badge.tsx.</td>
+</tr>
+<tr>
+  <td>27</td>
+  <td><code>badgeVariants</code><br><small style="color:var(--muted)">components/ui/badge.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>Badge()</code><br><small style="color:var(--muted)">components/ui/badge.tsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>badgeVariants node in components/ui/badge.tsx.</td>
+</tr>
+<tr>
+  <td>28</td>
+  <td><code>seo.ts</code><br><small style="color:var(--muted)">src/lib/seo.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>page.tsx</code><br><small style="color:var(--muted)">jobs/[slug]/page.tsx</small></td>
+  <td><code>Job</code><br><small style="color:var(--muted)">modules/jobs/types.ts</small><br><code>types.ts</code><br><small style="color:var(--muted)">modules/jobs/types.ts</small></td>
+  <td>Module file in src/lib/seo.ts.</td>
+</tr>
+<tr>
+  <td>29</td>
+  <td><code>utils.ts</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>ApplyModal.tsx</code><br><small style="color:var(--muted)">components/jobs/ApplyModal.tsx</small><br><code>avatar.tsx</code><br><small style="color:var(--muted)">components/ui/avatar.tsx</small><br><code>badge.tsx</code><br><small style="color:var(--muted)">components/ui/badge.tsx</small><br>+11 more</td>
+  <td><code>clsx</code><br><small style="color:var(--muted)">package.json</small><br><code>tailwind-merge</code><br><small style="color:var(--muted)">package.json</small></td>
+  <td>Module file in src/lib/utils.ts.</td>
+</tr>
+<tr>
+  <td>30</td>
+  <td><code>admin/data.ts</code><br><small style="color:var(--muted)">modules/admin/data.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td><code>page.tsx</code><br><small style="color:var(--muted)">app/admin/page.tsx</small><br><code>route.ts</code><br><small style="color:var(--muted)">admin/staff/route.ts</small></td>
+  <td>No direct outbound edge</td>
+  <td>Module file in modules/admin/data.ts.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>modules/admin/data.ts</code></td><td>5 nodes</td></tr>
+<tr><td><code>jobs/[slug]/page.tsx</code></td><td>4 nodes</td></tr>
+<tr><td><code>components/ui/badge.tsx</code></td><td>4 nodes</td></tr>
+<tr><td><code>src/lib/utils.ts</code></td><td>4 nodes</td></tr>
+<tr><td><code>app/admin/page.tsx</code></td><td>3 nodes</td></tr>
+<tr><td><code>components/jobs/DirectEmployerApplyBox.tsx</code></td><td>3 nodes</td></tr>
+<tr><td><code>components/jobs/JobCard.tsx</code></td><td>3 nodes</td></tr>
+<tr><td><code>src/lib/seo.ts</code></td><td>3 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: imports x24, contains x22, calls x13, imports x10. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 6. Components Cardtsx Buttontsx ====== -->
+<h2 id="components-cardtsx-buttontsx">6. Components Cardtsx Buttontsx</h2>
+<p>Components Cardtsx Buttontsx groups implementation around components, cardtsx, buttontsx, avatartsx, mostly in components/ui/card.tsx, components/ui/button.tsx, components/ui/avatar.tsx. This section covers 22 nodes and 34 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Components Cardtsx Buttontsx (22 nodes, 34 edges)
+    subgraph components_cardtsx_buttontsx_components_ui_card_7815402a["components/ui/card.tsx"]
+        src_components_ui_card_card_ce58475b("Card<br/><small>components/ui/card.tsx</small>")
+        src_components_ui_card_cardcontent_de4ec23b("CardContent<br/><small>components/ui/card.tsx</small>")
+        src_components_ui_card_carddescription_41c0192b("CardDescription<br/><small>components/ui/card.tsx</small>")
+        src_components_ui_card_cardfooter_3cee61da("CardFooter<br/><small>components/ui/card.tsx</small>")
+        src_components_ui_card_cardheader_a295e001("CardHeader<br/><small>components/ui/card.tsx</small>")
+        src_components_ui_card_cardtitle_8b3a359c("CardTitle<br/><small>components/ui/card.tsx</small>")
+        src_components_ui_card_d89f7bac("card.tsx")
+    end
+    subgraph components_cardtsx_buttontsx_components_ui_avata_636bd3b4["components/ui/avatar.tsx"]
+        src_components_ui_avatar_fca9acc3("avatar.tsx")
+        src_components_ui_avatar_avatar_c9a3f8f1("Avatar<br/><small>components/ui/avatar.tsx</small>")
+        src_components_ui_avatar_avatarfallback_cfed73ff("AvatarFallback<br/><small>components/ui/avatar.tsx</small>")
+        src_components_ui_avatar_avatarimage_4344fc62("AvatarImage<br/><small>components/ui/avatar.tsx</small>")
+    end
+    subgraph components_cardtsx_buttontsx_components_ui_butto_357026fa["components/ui/button.tsx"]
+        src_components_ui_button_button_a8929053("Button<br/><small>components/ui/button.tsx</small>")
+        src_components_ui_button_b5a1de55("button.tsx")
+        src_components_ui_button_buttonvariants_dcc8f924("buttonVariants<br/><small>components/ui/button.tsx</small>")
+    end
+    subgraph components_cardtsx_buttontsx_components_ui_input_b81bef77["components/ui/input.tsx"]
+        src_components_ui_input_input_ec074b87("Input<br/><small>components/ui/input.tsx</small>")
+        src_components_ui_input_660c742f("input.tsx")
+    end
+    src_components_ui_textarea_textarea_2ec06c3c("Textarea<br/><small>components/ui/textarea.tsx</small>")
+    src_lib_utils_cn_17f6bfce("cn()<br/><small>src/lib/utils.ts</small>")
+    src_components_ui_avatar_avatar_c9a3f8f1 -->|calls| src_lib_utils_cn_17f6bfce
+    src_components_ui_avatar_avatarfallback_cfed73ff -->|calls| src_lib_utils_cn_17f6bfce
+    src_components_ui_avatar_avatarimage_4344fc62 -->|calls| src_lib_utils_cn_17f6bfce
+    src_components_ui_button_button_a8929053 -->|calls| src_components_ui_button_buttonvariants_dcc8f924
+    src_components_ui_button_button_a8929053 -->|calls| src_lib_utils_cn_17f6bfce
+    src_components_ui_card_card_ce58475b -->|calls| src_lib_utils_cn_17f6bfce
+    src_components_ui_card_cardcontent_de4ec23b -->|calls| src_lib_utils_cn_17f6bfce
+    src_components_ui_card_carddescription_41c0192b -->|calls| src_lib_utils_cn_17f6bfce
+    src_components_ui_card_cardfooter_3cee61da -->|calls| src_lib_utils_cn_17f6bfce
+    src_components_ui_card_cardheader_a295e001 -->|calls| src_lib_utils_cn_17f6bfce
+    src_components_ui_card_cardtitle_8b3a359c -->|calls| src_lib_utils_cn_17f6bfce
+    src_components_ui_input_input_ec074b87 -->|calls| src_lib_utils_cn_17f6bfce
+    src_components_ui_textarea_textarea_2ec06c3c -->|calls| src_lib_utils_cn_17f6bfce
+    src_components_ui_avatar_fca9acc3 -->|imports| src_lib_utils_cn_17f6bfce
+    src_components_ui_button_b5a1de55 -->|imports| src_lib_utils_cn_17f6bfce
+    src_components_ui_card_d89f7bac -->|imports| src_lib_utils_cn_17f6bfce
+    src_components_ui_input_660c742f -->|imports| src_lib_utils_cn_17f6bfce
+    %% Omitted for readability: 4 nodes, 0 edges
+    class src_components_ui_card_card_ce58475b ui;
+    class src_components_ui_card_cardcontent_de4ec23b ui;
+    class src_components_ui_card_carddescription_41c0192b ui;
+    class src_components_ui_card_cardfooter_3cee61da ui;
+    class src_components_ui_card_cardheader_a295e001 ui;
+    class src_components_ui_card_cardtitle_8b3a359c ui;
+    class src_components_ui_card_d89f7bac ui;
+    class src_components_ui_avatar_fca9acc3 ui;
+    class src_components_ui_avatar_avatar_c9a3f8f1 ui;
+    class src_components_ui_avatar_avatarfallback_cfed73ff ui;
+    class src_components_ui_avatar_avatarimage_4344fc62 ui;
+    class src_components_ui_button_button_a8929053 ui;
+    class src_components_ui_button_b5a1de55 ui;
+    class src_components_ui_button_buttonvariants_dcc8f924 ui;
+    class src_components_ui_input_input_ec074b87 ui;
+    class src_components_ui_input_660c742f ui;
+    class src_components_ui_textarea_textarea_2ec06c3c ui;
+    class src_lib_utils_cn_17f6bfce function;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>ButtonProps</code><br><small style="color:var(--muted)">components/ui/button.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>ButtonProps node in components/ui/button.tsx.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>InputProps</code><br><small style="color:var(--muted)">components/ui/input.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>InputProps node in components/ui/input.tsx.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>TextareaProps</code><br><small style="color:var(--muted)">components/ui/textarea.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>TextareaProps node in components/ui/textarea.tsx.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>Avatar</code><br><small style="color:var(--muted)">components/ui/avatar.tsx</small><br><code>avatar.tsx</code><br><small style="color:var(--muted)">components/ui/avatar.tsx</small><br><code>AvatarFallback</code><br><small style="color:var(--muted)">components/ui/avatar.tsx</small><br>+20 more</td>
+  <td>No direct outbound edge</td>
+  <td>cn() node in src/lib/utils.ts.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>avatar.tsx</code><br><small style="color:var(--muted)">components/ui/avatar.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small><br><code>react</code><br><small style="color:var(--muted)">package.json</small><br><code>utils.ts</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>Module file in components/ui/avatar.tsx.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>Avatar</code><br><small style="color:var(--muted)">components/ui/avatar.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>Avatar node in components/ui/avatar.tsx.</td>
+</tr>
+<tr>
+  <td>7</td>
+  <td><code>AvatarFallback</code><br><small style="color:var(--muted)">components/ui/avatar.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>AvatarFallback node in components/ui/avatar.tsx.</td>
+</tr>
+<tr>
+  <td>8</td>
+  <td><code>AvatarImage</code><br><small style="color:var(--muted)">components/ui/avatar.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>AvatarImage node in components/ui/avatar.tsx.</td>
+</tr>
+<tr>
+  <td>9</td>
+  <td><code>button.tsx</code><br><small style="color:var(--muted)">components/ui/button.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>class-variance-authority</code><br><small style="color:var(--muted)">package.json</small><br><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small><br><code>react</code><br><small style="color:var(--muted)">package.json</small><br>+1 more</td>
+  <td>Module file in components/ui/button.tsx.</td>
+</tr>
+<tr>
+  <td>10</td>
+  <td><code>Button</code><br><small style="color:var(--muted)">components/ui/button.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>buttonVariants</code><br><small style="color:var(--muted)">components/ui/button.tsx</small><br><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>Button node in components/ui/button.tsx.</td>
+</tr>
+<tr>
+  <td>11</td>
+  <td><code>buttonVariants</code><br><small style="color:var(--muted)">components/ui/button.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td><code>Button</code><br><small style="color:var(--muted)">components/ui/button.tsx</small></td>
+  <td>No direct outbound edge</td>
+  <td>buttonVariants node in components/ui/button.tsx.</td>
+</tr>
+<tr>
+  <td>12</td>
+  <td><code>card.tsx</code><br><small style="color:var(--muted)">components/ui/card.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small><br><code>react</code><br><small style="color:var(--muted)">package.json</small><br><code>utils.ts</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>Module file in components/ui/card.tsx.</td>
+</tr>
+<tr>
+  <td>13</td>
+  <td><code>Card</code><br><small style="color:var(--muted)">components/ui/card.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>Card node in components/ui/card.tsx.</td>
+</tr>
+<tr>
+  <td>14</td>
+  <td><code>CardContent</code><br><small style="color:var(--muted)">components/ui/card.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>CardContent node in components/ui/card.tsx.</td>
+</tr>
+<tr>
+  <td>15</td>
+  <td><code>CardDescription</code><br><small style="color:var(--muted)">components/ui/card.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>CardDescription node in components/ui/card.tsx.</td>
+</tr>
+<tr>
+  <td>16</td>
+  <td><code>CardFooter</code><br><small style="color:var(--muted)">components/ui/card.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>CardFooter node in components/ui/card.tsx.</td>
+</tr>
+<tr>
+  <td>17</td>
+  <td><code>CardHeader</code><br><small style="color:var(--muted)">components/ui/card.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>CardHeader node in components/ui/card.tsx.</td>
+</tr>
+<tr>
+  <td>18</td>
+  <td><code>CardTitle</code><br><small style="color:var(--muted)">components/ui/card.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>CardTitle node in components/ui/card.tsx.</td>
+</tr>
+<tr>
+  <td>19</td>
+  <td><code>input.tsx</code><br><small style="color:var(--muted)">components/ui/input.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small><br><code>react</code><br><small style="color:var(--muted)">package.json</small><br><code>utils.ts</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>Module file in components/ui/input.tsx.</td>
+</tr>
+<tr>
+  <td>20</td>
+  <td><code>Input</code><br><small style="color:var(--muted)">components/ui/input.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>Input node in components/ui/input.tsx.</td>
+</tr>
+<tr>
+  <td>21</td>
+  <td><code>textarea.tsx</code><br><small style="color:var(--muted)">components/ui/textarea.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small><br><code>react</code><br><small style="color:var(--muted)">package.json</small><br><code>utils.ts</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>Module file in components/ui/textarea.tsx.</td>
+</tr>
+<tr>
+  <td>22</td>
+  <td><code>Textarea</code><br><small style="color:var(--muted)">components/ui/textarea.tsx</small></td>
+  <td><span class="tag tag-hook">UI</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>cn()</code><br><small style="color:var(--muted)">src/lib/utils.ts</small></td>
+  <td>Textarea node in components/ui/textarea.tsx.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>components/ui/card.tsx</code></td><td>7 nodes</td></tr>
+<tr><td><code>components/ui/avatar.tsx</code></td><td>4 nodes</td></tr>
+<tr><td><code>components/ui/button.tsx</code></td><td>4 nodes</td></tr>
+<tr><td><code>components/ui/input.tsx</code></td><td>3 nodes</td></tr>
+<tr><td><code>components/ui/textarea.tsx</code></td><td>3 nodes</td></tr>
+<tr><td><code>src/lib/utils.ts</code></td><td>1 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x16, calls x13, imports x5. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 7. Motionts Bentocardhover Bentospring ====== -->
+<h2 id="motionts-bentocardhover-bentospring">7. Motionts Bentocardhover Bentospring</h2>
+<p>Motionts Bentocardhover Bentospring groups implementation around motionts, bentocardhover, bentospring, containerstagger, mostly in src/lib/motion.ts. This section covers 6 nodes and 5 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Motionts Bentocardhover Bentospring (6 nodes, 5 edges)
+    src_lib_motion_4f4a9ecb("motion.ts")
+    src_lib_motion_bentospring_9542084b("bentoSpring<br/><small>src/lib/motion.ts</small>")
+    src_lib_motion_bentocardhover_b651c8d8("bentoCardHover<br/><small>src/lib/motion.ts</small>")
+    src_lib_motion_containerstagger_63eea4d7("containerStagger<br/><small>src/lib/motion.ts</small>")
+    src_lib_motion_itemstagger_8a986acc("itemStagger<br/><small>src/lib/motion.ts</small>")
+    src_lib_motion_gentlefade_85c2fff5("gentleFade<br/><small>src/lib/motion.ts</small>")
+    src_lib_motion_4f4a9ecb -->|contains| src_lib_motion_bentospring_9542084b
+    src_lib_motion_4f4a9ecb -->|contains| src_lib_motion_bentocardhover_b651c8d8
+    src_lib_motion_4f4a9ecb -->|contains| src_lib_motion_containerstagger_63eea4d7
+    src_lib_motion_4f4a9ecb -->|contains| src_lib_motion_itemstagger_8a986acc
+    src_lib_motion_4f4a9ecb -->|contains| src_lib_motion_gentlefade_85c2fff5
+    class src_lib_motion_4f4a9ecb module;
+    class src_lib_motion_bentospring_9542084b function;
+    class src_lib_motion_bentocardhover_b651c8d8 function;
+    class src_lib_motion_containerstagger_63eea4d7 function;
+    class src_lib_motion_itemstagger_8a986acc function;
+    class src_lib_motion_gentlefade_85c2fff5 function;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>motion.ts</code><br><small style="color:var(--muted)">src/lib/motion.ts</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Module file in src/lib/motion.ts.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>bentoCardHover</code><br><small style="color:var(--muted)">src/lib/motion.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>bentoCardHover node in src/lib/motion.ts.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>bentoSpring</code><br><small style="color:var(--muted)">src/lib/motion.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>bentoSpring node in src/lib/motion.ts.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>containerStagger</code><br><small style="color:var(--muted)">src/lib/motion.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>containerStagger node in src/lib/motion.ts.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>gentleFade</code><br><small style="color:var(--muted)">src/lib/motion.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>gentleFade node in src/lib/motion.ts.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>itemStagger</code><br><small style="color:var(--muted)">src/lib/motion.ts</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>itemStagger node in src/lib/motion.ts.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>src/lib/motion.ts</code></td><td>6 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x5. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 8. Readmemd Jobeelanka Sri ====== -->
+<h2 id="readmemd-jobeelanka-sri">8. Readmemd Jobeelanka Sri</h2>
+<p>Readmemd Jobeelanka Sri groups implementation around readmemd, jobeelanka, sri, lankas, mostly in README.md. This section covers 6 nodes and 5 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Readmemd Jobeelanka Sri (6 nodes, 5 edges)
+    readme_jobeelanka_sri_lanka_s_curated_job_employ_22236431("JobeeLanka (Sri Lanka's Curated Job &amp; E...<br/><small>README.md</small>")
+    readme_f78a71af("README.md")
+    readme_quickstart_0a369063("🚀 Quickstart<br/><small>README.md</small>")
+    readme_project_architecture_8bea1fcc("📁 Project Architecture<br/><small>README.md</small>")
+    readme_key_features_fae64a16("🌟 Key Features<br/><small>README.md</small>")
+    readme_license_compliance_c189f963("📜 License &amp; Compliance<br/><small>README.md</small>")
+    readme_f78a71af -->|contains| readme_jobeelanka_sri_lanka_s_curated_job_employ_22236431
+    readme_jobeelanka_sri_lanka_s_curated_job_employ_22236431 -->|contains| readme_quickstart_0a369063
+    readme_jobeelanka_sri_lanka_s_curated_job_employ_22236431 -->|contains| readme_project_architecture_8bea1fcc
+    readme_jobeelanka_sri_lanka_s_curated_job_employ_22236431 -->|contains| readme_key_features_fae64a16
+    readme_jobeelanka_sri_lanka_s_curated_job_employ_22236431 -->|contains| readme_license_compliance_c189f963
+    class readme_jobeelanka_sri_lanka_s_curated_job_employ_22236431 concept;
+    class readme_f78a71af concept;
+    class readme_quickstart_0a369063 concept;
+    class readme_project_architecture_8bea1fcc concept;
+    class readme_key_features_fae64a16 concept;
+    class readme_license_compliance_c189f963 concept;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>README.md</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing README.md.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>JobeeLanka (Sri Lanka&#x27;s Curated Job &amp; Employer Directory)</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing JobeeLanka (Sri Lanka&#x27;s Curated Job &amp; Employer Directory).</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>🌟 Key Features</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 🌟 Key Features.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>📜 License &amp; Compliance</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 📜 License &amp; Compliance.</td>
+</tr>
+<tr>
+  <td>5</td>
+  <td><code>📁 Project Architecture</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 📁 Project Architecture.</td>
+</tr>
+<tr>
+  <td>6</td>
+  <td><code>🚀 Quickstart</code><br><small style="color:var(--muted)">README.md</small></td>
+  <td><span class="tag tag-func">Concept</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Documentation node describing 🚀 Quickstart.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>README.md</code></td><td>6 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: contains x5. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 9. Nextconfigmjs Next Nextconfig ====== -->
+<h2 id="nextconfigmjs-next-nextconfig">9. Nextconfigmjs Next Nextconfig</h2>
+<p>Nextconfigmjs Next Nextconfig groups implementation around nextconfigmjs, next, nextconfig, redirects, mostly in next.config.mjs, next. This section covers 4 nodes and 3 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Nextconfigmjs Next Nextconfig (4 nodes, 3 edges)
+    subgraph nextconfigmjs_next_nextconfig_next_config_mjs_0d62c982["next.config.mjs"]
+        next_config_531ff3ba("next.config.mjs")
+        next_config_nextconfig_cf9503a0("nextConfig<br/><small>next.config.mjs</small>")
+    end
+    src_lib_redirects_9a6b346a("src_lib_redirects")
+    next_edee9402("next")
+    next_config_531ff3ba -->|imports| src_lib_redirects_9a6b346a
+    class next_config_531ff3ba function;
+    class next_config_nextconfig_cf9503a0 function;
+    class src_lib_redirects_9a6b346a function;
+    class next_edee9402 module;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>next</code><br><small style="color:var(--muted)">next</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>next node in next.</td>
+</tr>
+<tr>
+  <td>2</td>
+  <td><code>next.config.mjs</code><br><small style="color:var(--muted)">next.config.mjs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td><code>src_lib_redirects</code></td>
+  <td>Reads, resolves, or persists project configuration.</td>
+</tr>
+<tr>
+  <td>3</td>
+  <td><code>nextConfig</code><br><small style="color:var(--muted)">next.config.mjs</small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Reads, resolves, or persists project configuration.</td>
+</tr>
+<tr>
+  <td>4</td>
+  <td><code>src_lib_redirects</code><br><small style="color:var(--muted)"></small></td>
+  <td><span class="tag tag-func">Function</span></td>
+  <td><code>next.config.mjs</code><br><small style="color:var(--muted)">next.config.mjs</small></td>
+  <td>No direct outbound edge</td>
+  <td>src_lib_redirects node in project.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>next.config.mjs</code></td><td>2 nodes</td></tr>
+<tr><td><code>next</code></td><td>1 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: imports x1, contains x1, dynamic import x1. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<!-- ====== 10. Postcssconfigjs ====== -->
+<h2 id="postcssconfigjs">10. Postcssconfigjs</h2>
+<p>Postcssconfigjs groups implementation around postcssconfigjs, mostly in postcss.config.js. This section covers 1 nodes and 0 internal edges; the diagram shows only representative relationships to stay readable.</p>
+
+<div class="mermaid">
+%%{init: {"theme": "dark", "themeVariables": {"fontSize": "15.0px", "fontFamily": "Segoe UI, system-ui, sans-serif", "primaryColor": "#1e293b", "primaryTextColor": "#e2e8f0", "primaryBorderColor": "#38bdf8", "secondaryColor": "#0f172a", "tertiaryColor": "#334155", "lineColor": "#64748b", "textColor": "#e2e8f0"}, "flowchart": {"htmlLabels": true, "curve": "basis", "nodeSpacing": 48, "rankSpacing": 64, "padding": 14, "diagramPadding": 10, "useMaxWidth": true}}}%%
+flowchart LR
+    %% Section: Postcssconfigjs (1 nodes, 0 edges)
+    postcss_config_bfe60bb8("postcss.config.js")
+    class postcss_config_bfe60bb8 module;
+    classDef entry fill:#422006,stroke:#fbbf24,color:#fde68a,stroke-width:1px;
+    classDef api fill:#450a0a,stroke:#f87171,color:#fee2e2,stroke-width:1px;
+    classDef async fill:#2e1065,stroke:#a78bfa,color:#ede9fe,stroke-width:1px;
+    classDef klass fill:#064e3b,stroke:#34d399,color:#d1fae5,stroke-width:1px;
+    classDef ui fill:#831843,stroke:#f472b6,color:#fce7f3,stroke-width:1px;
+    classDef module fill:#172554,stroke:#60a5fa,color:#dbeafe,stroke-width:1px;
+    classDef test fill:#3f3f46,stroke:#a1a1aa,color:#f4f4f5,stroke-width:1px;
+    classDef concept fill:#292524,stroke:#a8a29e,color:#fafaf9,stroke-dasharray:4 3;
+    classDef function fill:#0f172a,stroke:#38bdf8,color:#e0f2fe,stroke-width:1px;
+</div>
+
+<h3>Call Details</h3>
+<table class="call-table">
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:28%">Node</th>
+  <th style="width:10%">Type</th>
+  <th style="width:17%">Caller</th>
+  <th style="width:20%">Callees</th>
+  <th style="width:20%">Description</th>
+</tr>
+<tr>
+  <td>1</td>
+  <td><code>postcss.config.js</code><br><small style="color:var(--muted)">postcss.config.js</small></td>
+  <td><span class="tag tag-class">Module</span></td>
+  <td>External entry / no inbound edge</td>
+  <td>No direct outbound edge</td>
+  <td>Reads, resolves, or persists project configuration.</td>
+</tr>
+</table>
+
+<div class="grid">
+  <div class="card">
+    <h4>Key Files</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><th>File</th><th>Coverage</th></tr>
+      <tr><td><code>postcss.config.js</code></td><td>1 nodes</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Design Notes</h4>
+    <p>This section comes from graphify community clustering. Relationship summary: No high-confidence call edges detected. The diagram prioritizes high-confidence calls or usage relationships; the table keeps the broader node inventory.</p>
+  </div>
+</div>
+<hr>
+
+<h2 id="stats">Project Statistics</h2>
+
+<div class="grid">
+  <div class="card">
+    <h4>Graph</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><td>Nodes</td><td>441</td></tr>
+      <tr><td>Edges</td><td>764</td></tr>
+      <tr><td>Hyperedges</td><td>0</td></tr>
+      <tr><td>Communities</td><td>18</td></tr>
+      <tr><td>Documented Sections</td><td>9</td></tr>
+    </table>
+  </div>
+  <div class="card">
+    <h4>Edge Confidence</h4>
+    <table style="width:100%;font-size:0.85rem;">
+      <tr><td>EXTRACTED</td><td>764</td></tr>
+      <tr><td>INFERRED</td><td>0</td></tr>
+      <tr><td>AMBIGUOUS</td><td>0</td></tr>
+    </table>
+  </div>
+</div>
+
+<div style="text-align:center; padding:40px 0; color: var(--muted); font-size:0.9rem;">
+  <p>Lanka Careers — Architecture Documentation</p>
+  <p>Generated: 2026-11-07 21:15 UTC · graphify callflow-html</p>
+</div>
+
+</div><!-- .container -->
+
+<script>
+(function () {
+  const mermaidConfig = {
+    startOnLoad: false,
+    theme: 'dark',
+    securityLevel: 'loose',
+    flowchart: { htmlLabels: true, useMaxWidth: true },
+    themeVariables: {
+      primaryColor: '#1e293b',
+      primaryTextColor: '#e2e8f0',
+      primaryBorderColor: '#38bdf8',
+      secondaryColor: '#0f172a',
+      tertiaryColor: '#334155',
+      lineColor: '#64748b',
+      textColor: '#e2e8f0',
+    }
+  };
+
+  mermaid.initialize(mermaidConfig);
+
+  function clamp(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+  }
+
+  function enhanceMermaidDiagrams() {
+    document.querySelectorAll('.mermaid').forEach((container) => {
+      if (container.dataset.zoomReady === 'true') return;
+      const svg = container.querySelector('svg');
+      if (!svg) return;
+
+      container.dataset.zoomReady = 'true';
+      container.classList.add('is-enhanced');
+
+      const viewport = document.createElement('div');
+      viewport.className = 'mermaid-viewport';
+      svg.parentNode.insertBefore(viewport, svg);
+      viewport.appendChild(svg);
+
+      const toolbar = document.createElement('div');
+      toolbar.className = 'mermaid-toolbar';
+      toolbar.innerHTML = [
+        '<button type="button" data-action="zoom-out" title="Zoom out">-</button>',
+        '<span class="zoom-level" data-role="level">100%</span>',
+        '<button type="button" data-action="zoom-in" title="Zoom in">+</button>',
+        '<button type="button" data-action="fit" title="Fit width">Fit</button>',
+        '<button type="button" data-action="reset" title="Reset view">Reset</button>'
+      ].join('');
+      container.insertBefore(toolbar, viewport);
+
+      const state = { scale: 1, x: 0, y: 0, dragging: false, startX: 0, startY: 0, originX: 0, originY: 0 };
+      const level = toolbar.querySelector('[data-role="level"]');
+
+      function applyTransform() {
+        svg.style.transform = `translate(${state.x}px, ${state.y}px) scale(${state.scale})`;
+        level.textContent = `${Math.round(state.scale * 100)}%`;
+      }
+
+      function zoomBy(delta) {
+        state.scale = clamp(state.scale + delta, 0.25, 3);
+        applyTransform();
+      }
+
+      function reset() {
+        state.scale = 1;
+        state.x = 0;
+        state.y = 0;
+        applyTransform();
+      }
+
+      function fitWidth() {
+        const rawWidth = svg.viewBox && svg.viewBox.baseVal && svg.viewBox.baseVal.width
+          ? svg.viewBox.baseVal.width
+          : svg.getBoundingClientRect().width / state.scale;
+        if (!rawWidth) {
+          reset();
+          return;
+        }
+        state.scale = clamp((viewport.clientWidth - 48) / rawWidth, 0.25, 1.4);
+        state.x = 0;
+        state.y = 0;
+        applyTransform();
+      }
+
+      toolbar.addEventListener('click', (event) => {
+        const button = event.target.closest('button[data-action]');
+        if (!button) return;
+        const action = button.dataset.action;
+        if (action === 'zoom-in') zoomBy(0.15);
+        if (action === 'zoom-out') zoomBy(-0.15);
+        if (action === 'fit') fitWidth();
+        if (action === 'reset') reset();
+      });
+
+      viewport.addEventListener('wheel', (event) => {
+        if (!event.ctrlKey && !event.metaKey) return;
+        event.preventDefault();
+        zoomBy(event.deltaY < 0 ? 0.1 : -0.1);
+      }, { passive: false });
+
+      viewport.addEventListener('pointerdown', (event) => {
+        if (event.button !== 0) return;
+        state.dragging = true;
+        state.startX = event.clientX;
+        state.startY = event.clientY;
+        state.originX = state.x;
+        state.originY = state.y;
+        viewport.classList.add('is-dragging');
+        viewport.setPointerCapture(event.pointerId);
+      });
+
+      viewport.addEventListener('pointermove', (event) => {
+        if (!state.dragging) return;
+        state.x = state.originX + event.clientX - state.startX;
+        state.y = state.originY + event.clientY - state.startY;
+        applyTransform();
+      });
+
+      function endDrag(event) {
+        if (!state.dragging) return;
+        state.dragging = false;
+        viewport.classList.remove('is-dragging');
+        if (viewport.hasPointerCapture(event.pointerId)) {
+          viewport.releasePointerCapture(event.pointerId);
+        }
+      }
+
+      viewport.addEventListener('pointerup', endDrag);
+      viewport.addEventListener('pointercancel', endDrag);
+      applyTransform();
+    });
+  }
+
+  function renderMermaid() {
+    const result = mermaid.run
+      ? mermaid.run({ querySelector: '.mermaid' })
+      : Promise.resolve();
+    Promise.resolve(result)
+      .then(enhanceMermaidDiagrams)
+      .catch((error) => {
+        console.error('Mermaid render failed:', error);
+        enhanceMermaidDiagrams();
+      });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderMermaid);
+  } else {
+    renderMermaid();
+  }
+})();
+</script>
+
+</body>
+</html>

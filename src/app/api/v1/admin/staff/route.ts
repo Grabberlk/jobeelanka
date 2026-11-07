@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { SEED_ADMIN_AND_STAFF, StaffUser } from "@/modules/admin/data";
 import { verifyAdminSessionToken } from "@/modules/auth/admin-auth";
+import { getSupabaseAdminClient } from "@/lib/supabase";
 
 // In-memory store for active session lifetime
 let staffList: StaffUser[] = [...SEED_ADMIN_AND_STAFF];
@@ -17,6 +18,34 @@ export async function GET(req: NextRequest) {
   if (!admin) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
+
+  // Attempt to read from Supabase if connected
+  const supabase = getSupabaseAdminClient();
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.from("staff").select("*").order("created_at", { ascending: false });
+      if (!error && data && data.length > 0) {
+        return NextResponse.json({
+          success: true,
+          data: data.map((s: any) => ({
+            id: s.id,
+            name: s.name,
+            email: s.email,
+            role: s.role,
+            department: s.department,
+            permissions: s.permissions || [],
+            status: s.status,
+            twoFactorEnabled: s.two_factor_enabled,
+            avatarUrl: s.avatar_url,
+            lastLogin: s.last_login || "Never",
+          })),
+        });
+      }
+    } catch {
+      // Fallback to in-memory store
+    }
+  }
+
   return NextResponse.json({ success: true, data: staffList });
 }
 
@@ -87,6 +116,26 @@ export async function POST(req: NextRequest) {
     };
 
     staffList = [newStaff, ...staffList];
+
+    // Persist to Supabase if available
+    const supabase = getSupabaseAdminClient();
+    if (supabase) {
+      try {
+        await supabase.from("staff").upsert({
+          id: newStaff.id,
+          name: newStaff.name,
+          email: newStaff.email,
+          role: newStaff.role,
+          department: newStaff.department,
+          permissions: newStaff.permissions,
+          status: newStaff.status,
+          two_factor_enabled: false,
+        });
+      } catch {
+        // Continue with in-memory sync
+      }
+    }
+
     return NextResponse.json({ success: true, data: newStaff, list: staffList });
   } catch (err: unknown) {
     const msg = err instanceof Error ? err.message : "Internal error";
@@ -122,5 +171,16 @@ export async function DELETE(req: NextRequest) {
   }
 
   staffList = staffList.filter((s) => s.id !== id);
+
+  // Sync delete with Supabase if available
+  const supabase = getSupabaseAdminClient();
+  if (supabase) {
+    try {
+      await supabase.from("staff").delete().eq("id", id);
+    } catch {
+      // Continue
+    }
+  }
+
   return NextResponse.json({ success: true, message: "Staff removed", list: staffList });
 }
