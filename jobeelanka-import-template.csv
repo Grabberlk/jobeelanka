@@ -1,0 +1,4 @@
+title,company,listing_type,category,location,country,description,source_url,apply_url,posted_date,expiry_date,logo_url,featured,status
+Assistant Accountant,Example Company,vacancy,Accounting & Auditing,Colombo,Sri Lanka,"Short original summary of the opportunity",https://employer.example/careers/job-123,https://employer.example/careers/job-123,2026-11-06,2026-12-06,https://employer.example/logo.png,true,published
+Example Company Careers,Example Company,employer_page,Corporate Companies,Colombo,Sri Lanka,"Official employer careers page",https://employer.example/careers,https://employer.example/careers,,,,false,published
+IT Support Officer,Example Recruiter,recruiter,IT & Technology,Kandy,Sri Lanka,"Short original summary of the recruiter listing",https://recruiter.example/jobs/it-support,https://recruiter.example/jobs/it-support,2026-11-06,2026-11-30,,false,published

@@ -1,0 +1,48 @@
+[
+  {
+    "source": "/salaries",
+    "destination": "/jobs",
+    "permanent": true
+  },
+  {
+    "source": "/salaries/:slug*",
+    "destination": "/jobs",
+    "permanent": true
+  },
+  {
+    "source": "/vacancies",
+    "destination": "/jobs",
+    "permanent": true
+  },
+  {
+    "source": "/vacancies/:slug*",
+    "destination": "/jobs/:slug*",
+    "permanent": true
+  },
+  {
+    "source": "/careers",
+    "destination": "/jobs",
+    "permanent": true
+  },
+  {
+    "source": "/careers/:slug*",
+    "destination": "/jobs/:slug*",
+    "permanent": true
+  },
+  {
+    "source": "/post-a-vacancy",
+    "destination": "/post-a-listing",
+    "permanent": true
+  },
+  {
+    "source": "/dashboard/candidate",
+    "destination": "/jobs",
+    "permanent": true
+  },
+  {
+    "source": "/report",
+    "destination": "/report-listing",
+    "permanent": true
+  }
+]
+
