@@ -84,15 +84,16 @@ function JobsSearchContent() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
       {/* Header Banner */}
-      <div className="bg-slate-900 text-white p-6 sm:p-8 rounded-3xl border border-slate-800 shadow-xl space-y-4">
-        <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+      <div className="relative overflow-hidden rounded-3xl border border-emerald-500/20 bg-linear-to-br from-slate-900 via-slate-900 to-slate-950 p-6 sm:p-8 text-white shadow-xl space-y-4">
+        <div className="absolute -right-20 -top-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider">
           <Sparkles className="w-4 h-4" />
           <span>Multi-Faceted Job Search Matrix</span>
         </div>
-        <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
+        <h1 className="relative text-2xl sm:text-4xl font-extrabold tracking-tight">
           Find Verified Vacancies Across Sri Lanka
         </h1>
-        <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+        <p className="relative text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
           Search over 1,400+ career listings by district, industry, work mode, and verified status. Direct referral via official employer career pages, verified WhatsApp, or direct HR contact.
         </p>
 
@@ -104,7 +105,7 @@ function JobsSearchContent() {
             value={filters.query || ""}
             onChange={(e) => updateFilters({ ...filters, query: e.target.value })}
             placeholder="Search by role, skill (e.g. React, Cloud, Python), or company..."
-            className="w-full bg-slate-800/90 border border-slate-700 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+            className="w-full bg-slate-800/90 border border-slate-700/80 rounded-2xl pl-10 pr-4 py-3 text-xs sm:text-sm text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all shadow-inner"
           />
         </div>
       </div>

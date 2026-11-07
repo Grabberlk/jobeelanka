@@ -1,7 +1,8 @@
 import React from "react";
 import Link from "next/link";
-import { SEED_EMPLOYERS, SEED_JOBS } from "@/modules/jobs/data";
-import { ShieldCheck, Building2, ExternalLink, ArrowRight, MapPin, Globe } from "lucide-react";
+import { JobRepository } from "@/modules/jobs/repository";
+import { Employer } from "@/modules/jobs/types";
+import { ShieldCheck, Building2, ExternalLink, ArrowRight, MapPin, Globe, Sparkles } from "lucide-react";
 import { AdSlot } from "@/components/ads/AdSlot";
 
 export const metadata = {
@@ -10,20 +11,29 @@ export const metadata = {
 };
 
 export default function CompaniesPage() {
-  const employers = Object.values(SEED_EMPLOYERS);
+  const allEmps = JobRepository.getAllEmployers();
+  const uniqueEmployersMap = new Map<string, Employer>();
+  for (const emp of allEmps) {
+    if (emp && emp.id && !uniqueEmployersMap.has(emp.id)) {
+      uniqueEmployersMap.set(emp.id, emp);
+    }
+  }
+  const employers = Array.from(uniqueEmployersMap.values());
+  const allJobs = JobRepository.getAllJobs();
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
       {/* Header Banner */}
-      <div className="bg-slate-900 text-white p-6 sm:p-10 rounded-3xl border border-slate-800 shadow-xl space-y-3">
-        <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider">
+      <div className="relative overflow-hidden rounded-3xl border border-emerald-500/20 bg-linear-to-br from-slate-900 via-slate-900 to-slate-950 p-6 sm:p-10 text-white shadow-xl space-y-3">
+        <div className="absolute -right-20 -top-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider">
           <ShieldCheck className="w-4 h-4" />
           <span>Verified Organization Roster</span>
         </div>
-        <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
+        <h1 className="relative text-2xl sm:text-4xl font-extrabold tracking-tight">
           Verified Employers & Recruitment Agencies in Sri Lanka
         </h1>
-        <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+        <p className="relative text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
           Every company listed on JobeeLanka is verified through corporate domain authentication, business registration (BR), or the Sri Lanka Bureau of Foreign Employment (SLBFE).
         </p>
       </div>
@@ -31,7 +41,7 @@ export default function CompaniesPage() {
       {/* Companies Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {employers.map((emp) => {
-          const activeJobsCount = SEED_JOBS.filter((j) => j.employer.id === emp.id).length;
+          const activeJobsCount = allJobs.filter((j) => j.employer?.id === emp.id).length;
 
           return (
             <div
@@ -49,7 +59,7 @@ export default function CompaniesPage() {
                     />
                   </div>
                   <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/60 px-2.5 py-1 rounded-full border border-emerald-200 dark:border-emerald-800">
-                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+                    <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
                     <span>{emp.slbfeLicenseNumber ? "SLBFE Licensed" : "Verified"}</span>
                   </span>
                 </div>
@@ -63,16 +73,20 @@ export default function CompaniesPage() {
                       <MapPin className="w-3.5 h-3.5 text-slate-400" />
                       <span>{emp.district}, Sri Lanka</span>
                     </span>
-                    <span>•</span>
-                    <a
-                      href={emp.website}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline font-semibold"
-                    >
-                      <span>{emp.verifiedDomain}</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
+                    {emp.website && (
+                      <>
+                        <span>•</span>
+                        <a
+                          href={emp.website}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline font-semibold"
+                        >
+                          <span>{emp.verifiedDomain || "Official Website"}</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </a>
+                      </>
+                    )}
                   </div>
                 </div>
 
@@ -99,8 +113,8 @@ export default function CompaniesPage() {
         })}
       </div>
 
-      {/* AdSense AdSlot */}
-      <AdSlot format="horizontal" pageType="directory" />
+      {/* Ad Placement */}
+      <AdSlot pageType="directory" />
     </div>
   );
 }
