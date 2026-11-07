@@ -153,6 +153,52 @@ create policy "Allow full access for service role on staff"
   on public.staff for all
   using (auth.role() = 'service_role');
 
+-- Admin Users RLS Policies (For staff users authenticated via Supabase Auth)
+create policy "Allow staff with SUPER_ADMIN role to manage staff table"
+  on public.staff for all
+  using (
+    auth.role() = 'service_role' or 
+    exists (
+      select 1 from public.staff s
+      where s.email = (auth.jwt() ->> 'email')
+      and s.role = 'SUPER_ADMIN'
+      and s.status = 'ACTIVE'
+    )
+  );
+
+create policy "Allow authenticated staff to manage jobs"
+  on public.jobs for all
+  using (
+    auth.role() = 'service_role' or
+    exists (
+      select 1 from public.staff s
+      where s.email = (auth.jwt() ->> 'email')
+      and s.status = 'ACTIVE'
+    )
+  );
+
+create policy "Allow authenticated staff to manage employers"
+  on public.employers for all
+  using (
+    auth.role() = 'service_role' or
+    exists (
+      select 1 from public.staff s
+      where s.email = (auth.jwt() ->> 'email')
+      and s.status = 'ACTIVE'
+    )
+  );
+
+create policy "Allow authenticated staff to view candidate applications"
+  on public.applications for select
+  using (
+    auth.role() = 'service_role' or
+    exists (
+      select 1 from public.staff s
+      where s.email = (auth.jwt() ->> 'email')
+      and s.status = 'ACTIVE'
+    )
+  );
+
 -- Seed Root Super Administrators
 insert into public.staff (id, name, email, role, department, permissions, status, two_factor_enabled)
 values 

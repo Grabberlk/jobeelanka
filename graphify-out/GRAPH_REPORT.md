@@ -1,17 +1,17 @@
 # Graph Report - Lanka Careers  (2026-11-08)
 
 ## Corpus Check
-- 86 files · ~384,348 words
+- 88 files · ~386,498 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 5 file(s) not represented in the graph (top: .csv 2, .example 1, (none) 1)
 
 ## Summary
-- 441 nodes · 764 edges · 18 communities (15 shown, 3 thin omitted)
+- 450 nodes · 787 edges · 18 communities (15 shown, 3 thin omitted)
 - Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `a00513a7`
+- Built from commit: `dc24ce44`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -25,7 +25,7 @@
 - compilerOptions
 - cn
 - Lanka Careers & Talents: Next-Gen Job Discovery OS & Growth Blueprint
-- next
+- app/layout.tsx
 - motion.ts
 - next.config.mjs
 - csv-service.test.js
@@ -35,13 +35,13 @@
 - .mcp.json
 
 ## God Nodes (most connected - your core abstractions)
-1. `next` - 42 edges
+1. `next` - 43 edges
 2. `react` - 36 edges
 3. `lucide-react` - 27 edges
 4. `cn()` - 24 edges
 5. `JobeeLanka: Comparative Review and New Website Strategy` - 18 edges
 6. `compilerOptions` - 16 edges
-7. `JobRepository` - 14 edges
+7. `JobRepository` - 15 edges
 8. `Job` - 14 edges
 9. `Lanka Careers & Talents: Next-Gen Job Discovery OS & Growth Blueprint` - 14 edges
 10. `buildWhatsAppUrl()` - 10 edges
@@ -68,12 +68,12 @@ Cohesion: 0.06
 Nodes (41): dependencies, class-variance-authority@^0.7.1, clsx@^2.1.1, lucide-react@^1.16.0, next@15.1.12, react@19.0.0, react-dom@19.0.0, @supabase/supabase-js@^2.119.0 (+33 more)
 
 ### Community 1 - "react"
-Cohesion: 0.09
-Nodes (24): lucide-react, react, metadata, CompaniesPage(), metadata, CandidateDashboardPage(), EmployerDashboardPage(), HomePage() (+16 more)
+Cohesion: 0.06
+Nodes (33): lucide-react, next, react, metadata, metadata, metadata, CompaniesPage(), metadata (+25 more)
 
 ### Community 2 - "repository.ts"
 Cohesion: 0.06
-Nodes (24): RFC-4180, RouteParams, RouteParams, JobsPage(), JobsSearchContent(), ApplyModal(), JobFilters(), JobFiltersProps (+16 more)
+Nodes (22): RFC-4180, RouteParams, RouteParams, JobsPage(), JobsSearchContent(), ApplyModal(), JobFilters(), JobFiltersProps (+14 more)
 
 ### Community 3 - "admin/page.tsx"
 Cohesion: 0.15
@@ -99,9 +99,9 @@ Nodes (17): Avatar, AvatarFallback, AvatarImage, Button, ButtonProps, buttonVari
 Cohesion: 0.05
 Nodes (39): 10. Four-Phase Implementation Roadmap & Success Metrics, 11. Master Autonomous Build Prompt, 12. Primary References & Authorities, 1. Executive Vision & Strategic Paradigm Shift, 1. Public Homepage Bento Hero Layout (Desktop 12-Column Grid), 2. Candidate "Career Cockpit" Bento Dashboard, 2. Domain-Driven Design (DDD) & System Architecture, 3. Architecture Decision Records (ADRs) (+31 more)
 
-### Community 9 - "next"
-Cohesion: 0.09
-Nodes (13): next, metadata, metadata, inter, metadata, RootLayout(), viewport, ReportListingForm() (+5 more)
+### Community 9 - "app/layout.tsx"
+Cohesion: 0.24
+Nodes (8): inter, jsonLdOrg, jsonLdWebSite, metadata, RootLayout(), viewport, Footer(), Navbar()
 
 ### Community 10 - "motion.ts"
 Cohesion: 0.33
@@ -116,8 +116,8 @@ Cohesion: 0.11
 Nodes (12): colMap, csvPath, employersMap, empOutputPath, fs, jobs, outputPath, path (+4 more)
 
 ### Community 15 - "staff/route.ts"
-Cohesion: 0.18
-Nodes (14): checkAuth(), DELETE(), GET(), POST(), staffList, GET(), POST(), AdminUser (+6 more)
+Cohesion: 0.15
+Nodes (18): checkAuth(), DELETE(), GET(), POST(), staffList, checkAuth(), POST(), GET() (+10 more)
 
 ### Community 16 - "JobeeLanka (Sri Lanka's Curated Job & Employer Directory)"
 Cohesion: 0.33
@@ -125,23 +125,23 @@ Nodes (5): JobeeLanka (Sri Lanka's Curated Job & Employer Directory), 🌟 Key F
 
 ## Knowledge Gaps
 - **1 isolated node(s):** `RFC-4180`
-  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 218 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
+  These have ≤1 connection - possible missing edges or undocumented components. (Counts symbols only; 222 node(s) total have ≤1 connection when file, concept and rationale nodes are included.)
 - **3 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `next` connect `next` to `package.json`, `react`, `repository.ts`, `admin/page.tsx`, `rss-parser.ts`, `staff/route.ts`?**
-  _High betweenness centrality (0.193) - this node is a cross-community bridge._
+- **Why does `next` connect `react` to `package.json`, `repository.ts`, `admin/page.tsx`, `rss-parser.ts`, `app/layout.tsx`, `staff/route.ts`?**
+  _High betweenness centrality (0.191) - this node is a cross-community bridge._
 - **What connects `RFC-4180` to the rest of the system?**
   _1 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `package.json` be split into smaller, more focused modules?**
   _Cohesion score 0.06090808416389812 - nodes in this community are weakly interconnected._
-- **Why does `react` connect `react` to `package.json`, `repository.ts`, `admin/page.tsx`, `cn`, `next`?**
-  _High betweenness centrality (0.083) - this node is a cross-community bridge._
+- **Why does `react` connect `react` to `package.json`, `repository.ts`, `admin/page.tsx`, `cn`?**
+  _High betweenness centrality (0.081) - this node is a cross-community bridge._
 - **Should `react` be split into smaller, more focused modules?**
-  _Cohesion score 0.09061224489795919 - nodes in this community are weakly interconnected._
-- **Why does `lucide-react` connect `react` to `package.json`, `next`, `repository.ts`, `admin/page.tsx`?**
-  _High betweenness centrality (0.034) - this node is a cross-community bridge._
+  _Cohesion score 0.05960755275823769 - nodes in this community are weakly interconnected._
+- **Why does `lucide-react` connect `react` to `package.json`, `repository.ts`, `admin/page.tsx`?**
+  _High betweenness centrality (0.033) - this node is a cross-community bridge._
 - **Should `repository.ts` be split into smaller, more focused modules?**
-  _Cohesion score 0.05779220779220779 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06108597285067873 - nodes in this community are weakly interconnected._

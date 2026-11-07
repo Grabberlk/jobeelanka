@@ -140,6 +140,13 @@ export default function AdminPortalPage() {
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ACTIVE" | "INACTIVE">("ALL");
   const [isSyncingFeedId, setIsSyncingFeedId] = useState<string | null>(null);
 
+  // Table Pagination State
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(25);
+
+  // Database Sync State
+  const [isSyncingDb, setIsSyncingDb] = useState(false);
+
   // CSV Import Modal state
   const [isCsvModalOpen, setIsCsvModalOpen] = useState(false);
   const [csvInputText, setCsvInputText] = useState("");
@@ -304,6 +311,24 @@ export default function AdminPortalPage() {
       showToast(`Staff member "${staffName}" removed.`, "success");
     } catch {
       showToast("Network error removing staff member", "error");
+    }
+  };
+
+  const handleSyncDatabase = async () => {
+    setIsSyncingDb(true);
+    try {
+      const res = await fetch("/api/v1/admin/sync-db", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        showToast(data.error || "Supabase database credentials needed in environment", "error");
+      } else {
+        showToast(data.message || "Database synchronized successfully!", "success");
+        loadAllData();
+      }
+    } catch {
+      showToast("Network connection error during database sync", "error");
+    } finally {
+      setIsSyncingDb(false);
     }
   };
 
@@ -1392,7 +1417,10 @@ export default function AdminPortalPage() {
                     className="w-full px-3 py-2 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                   />
                   <button
-                    onClick={() => setSearchQuery(tempSearchInput)}
+                    onClick={() => {
+                      setSearchQuery(tempSearchInput);
+                      setCurrentPage(1);
+                    }}
                     className="px-3.5 py-2 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-700 text-white shadow-sm transition-colors"
                   >
                     Search
@@ -1404,6 +1432,7 @@ export default function AdminPortalPage() {
                       setSelectedCategory("ALL");
                       setSelectedCustomer("ALL");
                       setStatusFilter("ALL");
+                      setCurrentPage(1);
                     }}
                     className="px-3 py-2 text-xs font-semibold rounded-xl bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 text-slate-700 dark:text-slate-200 transition-colors"
                   >
@@ -1433,7 +1462,10 @@ export default function AdminPortalPage() {
                 {/* Category Filter Dropdown */}
                 <select
                   value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedCategory(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="px-3 py-2 text-xs font-medium rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none"
                 >
                   <option value="ALL">Filter By Category (All)</option>
@@ -1456,7 +1488,10 @@ export default function AdminPortalPage() {
                 {/* Customer (Employer) Filter Dropdown */}
                 <select
                   value={selectedCustomer}
-                  onChange={(e) => setSelectedCustomer(e.target.value)}
+                  onChange={(e) => {
+                    setSelectedCustomer(e.target.value);
+                    setCurrentPage(1);
+                  }}
                   className="px-3 py-2 text-xs font-medium rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none"
                 >
                   <option value="ALL">Filter By Customer (All)</option>
@@ -1470,7 +1505,10 @@ export default function AdminPortalPage() {
                 {/* Status Filter */}
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                  onChange={(e) => {
+                    setStatusFilter(e.target.value as any);
+                    setCurrentPage(1);
+                  }}
                   className="px-3 py-2 text-xs font-medium rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 text-slate-800 dark:text-slate-200 focus:outline-none"
                 >
                   <option value="ALL">All Status</option>
@@ -1478,9 +1516,22 @@ export default function AdminPortalPage() {
                   <option value="INACTIVE">Status: OFF only</option>
                 </select>
 
-                <div className="ml-auto text-xs font-semibold text-slate-500 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800">
-                  <span>Page size: </span>
-                  <span className="font-bold text-slate-800 dark:text-slate-200">100</span>
+                <div className="ml-auto flex items-center gap-2 text-xs font-semibold text-slate-500 bg-white dark:bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-800">
+                  <span>Page size:</span>
+                  <select
+                    value={pageSize}
+                    onChange={(e) => {
+                      setPageSize(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                    className="bg-transparent font-bold text-slate-800 dark:text-slate-200 focus:outline-none cursor-pointer"
+                  >
+                    <option value={20}>20</option>
+                    <option value={25}>25</option>
+                    <option value={50}>50</option>
+                    <option value={100}>100</option>
+                    <option value={250}>250</option>
+                  </select>
                 </div>
               </div>
 
@@ -1510,211 +1561,279 @@ export default function AdminPortalPage() {
               </div>
             </div>
 
-            {/* Jobs Table (Matching Image 1: Image | Title | Code | Category | city | Views | added | Status | Actions) */}
-            <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800">
-              <table className="w-full text-left border-collapse text-xs min-w-[950px]">
-                <thead>
-                  <tr className="bg-slate-100 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[11px]">
-                    <th className="py-3 px-3 w-14 text-center">Image</th>
-                    <th className="py-3 px-3">Title</th>
-                    <th className="py-3 px-3">Code</th>
-                    <th className="py-3 px-3">Category</th>
-                    <th className="py-3 px-3">city</th>
-                    <th className="py-3 px-3 text-center">Views</th>
-                    <th className="py-3 px-3">added</th>
-                    <th className="py-3 px-3 text-center">Status</th>
-                    <th className="py-3 px-3 text-center">Direct Channels</th>
-                    <th className="py-3 px-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-slate-900">
-                  {filteredJobs.length === 0 ? (
-                    <tr>
-                      <td colSpan={10} className="py-10 text-center text-slate-400">
-                        No vacancies match your filter criteria. Click &quot;Reset&quot; to restore all items.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredJobs.map((job) => {
-                      const destinationUrl =
-                        job.applicationUrl || job.applyUrl || job.sourceUrl || job.employer.website;
-                      const isStatusOn = job.status !== "INACTIVE";
+            {/* Jobs Table (Matching Image 1 with sticky header and max height) */}
+            {(() => {
+              const totalPages = Math.ceil(filteredJobs.length / pageSize) || 1;
+              const paginatedJobs = filteredJobs.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-                      return (
-                        <tr
-                          key={job.id}
-                          className={`hover:bg-slate-50/90 dark:hover:bg-slate-800/40 transition-colors ${
-                            !isStatusOn ? "opacity-60 bg-slate-50/40 dark:bg-slate-950/30" : ""
-                          }`}
-                        >
-                          {/* Image */}
-                          <td className="py-3 px-3 text-center">
-                            <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden mx-auto flex items-center justify-center p-0.5">
-                              {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img
-                                src={job.employer.logo}
-                                alt={job.employer.displayName}
-                                className="w-full h-full object-contain rounded-lg"
-                              />
-                            </div>
-                          </td>
-
-                          {/* Title */}
-                          <td className="py-3 px-3 max-w-xs">
-                            <div className="font-bold text-slate-900 dark:text-white leading-snug line-clamp-2">
-                              {destinationUrl ? (
-                                <a
-                                  href={destinationUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="hover:text-emerald-600 hover:underline inline-flex items-center gap-1"
-                                  title={`Click to open destination: ${destinationUrl}`}
-                                >
-                                  <span>{job.title}</span>
-                                  <ExternalLink className="w-3 h-3 text-slate-400 shrink-0 inline" />
-                                </a>
-                              ) : (
-                                <span>{job.title}</span>
-                              )}
-                            </div>
-                            <div className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
-                              {job.employer.displayName}
-                            </div>
-                          </td>
-
-                          {/* Code */}
-                          <td className="py-3 px-3 whitespace-nowrap">
-                            <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700">
-                              {job.code || "110B0PNNQ1R"}
-                            </span>
-                          </td>
-
-                          {/* Category */}
-                          <td className="py-3 px-3 text-slate-700 dark:text-slate-300 font-medium whitespace-nowrap">
-                            <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px]">
-                              {job.industry}
-                            </span>
-                          </td>
-
-                          {/* City */}
-                          <td className="py-3 px-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">
-                            {job.city || job.district || "Any part of Sri Lanka"}
-                          </td>
-
-                          {/* Views */}
-                          <td className="py-3 px-3 text-center font-bold text-slate-800 dark:text-slate-200">
-                            {job.viewsCount || 0}
-                          </td>
-
-                          {/* Added Date */}
-                          <td className="py-3 px-3 text-slate-500 whitespace-nowrap font-mono text-[11px]">
-                            {job.datePosted ? job.datePosted.replace("T", " ").slice(0, 19) : "2020-12-14 00:40:31"}
-                          </td>
-
-                          {/* Status (iOS ON/OFF toggle switch) */}
-                          <td className="py-3 px-3 text-center">
-                            <button
-                              type="button"
-                              role="switch"
-                              aria-checked={isStatusOn}
-                              onClick={() => handleToggleJobStatus(job)}
-                              title={isStatusOn ? "Click to turn OFF" : "Click to turn ON"}
-                              className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${
-                                isStatusOn ? "bg-emerald-600" : "bg-slate-300 dark:bg-slate-700"
-                              }`}
-                            >
-                              <span
-                                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
-                                  isStatusOn ? "translate-x-5" : "translate-x-0"
-                                }`}
-                              />
-                            </button>
-                          </td>
-
-                          {/* Direct Channels (Hidden by default, toggleable per job) */}
-                          <td className="py-3 px-3 text-center">
-                            <div className="flex items-center justify-center gap-1">
-                              <button
-                                onClick={() => handleToggleContactChannel(job, "showWhatsApp")}
-                                title={`WhatsApp: ${job.showWhatsApp ? "ON (shown on cards)" : "OFF (hidden)"}`}
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ${
-                                  job.showWhatsApp
-                                    ? "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300"
-                                    : "bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800 dark:text-slate-500"
-                                }`}
-                              >
-                                WA
-                              </button>
-                              <button
-                                onClick={() => handleToggleContactChannel(job, "showEmail")}
-                                title={`Email: ${job.showEmail ? "ON (shown on cards)" : "OFF (hidden)"}`}
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ${
-                                  job.showEmail
-                                    ? "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950 dark:text-blue-300"
-                                    : "bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800 dark:text-slate-500"
-                                }`}
-                              >
-                                Mail
-                              </button>
-                              <button
-                                onClick={() => handleToggleContactChannel(job, "showPhone")}
-                                title={`Phone: ${job.showPhone ? "ON (shown on cards)" : "OFF (hidden)"}`}
-                                className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ${
-                                  job.showPhone
-                                    ? "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-950 dark:text-purple-300"
-                                    : "bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800 dark:text-slate-500"
-                                }`}
-                              >
-                                Tel
-                              </button>
-                            </div>
-                          </td>
-
-                          {/* Actions (Blue circular edit button matching Image 1) */}
-                          <td className="py-3 px-3 text-right">
-                            <div className="flex items-center justify-end gap-1.5">
-                              {/* Blue Edit Button matching legacy UI */}
-                              <button
-                                onClick={() => {
-                                  setEditingJob(job);
-                                  setIsJobModalOpen(true);
-                                }}
-                                title="Edit Job Vacancy"
-                                className="w-7 h-7 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-xs transition-transform active:scale-90"
-                              >
-                                <Edit className="w-3.5 h-3.5" />
-                              </button>
-
-                              {/* External Link button */}
-                              {destinationUrl && (
-                                <a
-                                  href={destinationUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  title="Test destination URL"
-                                  className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center border border-slate-200 dark:border-slate-700 transition-colors"
-                                >
-                                  <ExternalLink className="w-3 h-3" />
-                                </a>
-                              )}
-
-                              {/* Delete button */}
-                              <button
-                                onClick={() => handleDeleteJob(job.id, job.title)}
-                                title="Delete Listing"
-                                className="w-7 h-7 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950/60 flex items-center justify-center border border-rose-200 dark:border-rose-900 transition-colors"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </td>
+              return (
+                <>
+                  <div className="overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 max-h-[640px] overflow-y-auto scrollbar-thin shadow-xs">
+                    <table className="w-full text-left border-collapse text-xs min-w-[950px]">
+                      <thead className="sticky top-0 z-10 bg-slate-100/95 dark:bg-slate-800/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 font-bold text-[11px] shadow-xs">
+                        <tr>
+                          <th className="py-2.5 px-3 w-14 text-center">Image</th>
+                          <th className="py-2.5 px-3 min-w-[280px]">Title</th>
+                          <th className="py-2.5 px-3 whitespace-nowrap">Code</th>
+                          <th className="py-2.5 px-3 whitespace-nowrap">Category</th>
+                          <th className="py-2.5 px-3 whitespace-nowrap">City</th>
+                          <th className="py-2.5 px-3 text-center whitespace-nowrap">Views</th>
+                          <th className="py-2.5 px-3 whitespace-nowrap">Added</th>
+                          <th className="py-2.5 px-3 text-center whitespace-nowrap">Status</th>
+                          <th className="py-2.5 px-3 text-center whitespace-nowrap">Direct Channels</th>
+                          <th className="py-2.5 px-3 text-right whitespace-nowrap">Actions</th>
                         </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
-            </div>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60 bg-white dark:bg-slate-900">
+                        {paginatedJobs.length === 0 ? (
+                          <tr>
+                            <td colSpan={10} className="py-12 text-center text-slate-400">
+                              No vacancies match your filter criteria. Click &quot;Reset&quot; to restore all items.
+                            </td>
+                          </tr>
+                        ) : (
+                          paginatedJobs.map((job) => {
+                            const destinationUrl =
+                              job.applicationUrl || job.applyUrl || job.sourceUrl || job.employer.website;
+                            const isStatusOn = job.status !== "INACTIVE";
+
+                            return (
+                              <tr
+                                key={job.id}
+                                className={`hover:bg-slate-50/90 dark:hover:bg-slate-800/40 transition-colors ${
+                                  !isStatusOn ? "opacity-60 bg-slate-50/40 dark:bg-slate-950/30" : ""
+                                }`}
+                              >
+                                {/* Image */}
+                                <td className="py-2.5 px-3 text-center">
+                                  <div className="w-10 h-10 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 overflow-hidden mx-auto flex items-center justify-center p-0.5">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                      src={job.employer.logo}
+                                      alt={job.employer.displayName}
+                                      className="w-full h-full object-contain rounded-lg"
+                                    />
+                                  </div>
+                                </td>
+
+                                {/* Title */}
+                                <td className="py-2.5 px-3 max-w-xs">
+                                  <div className="font-bold text-slate-900 dark:text-white leading-snug line-clamp-2">
+                                    {destinationUrl ? (
+                                      <a
+                                        href={destinationUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="hover:text-emerald-600 hover:underline inline-flex items-center gap-1"
+                                        title={`Click to open destination: ${destinationUrl}`}
+                                      >
+                                        <span>{job.title}</span>
+                                        <ExternalLink className="w-3 h-3 text-slate-400 shrink-0 inline" />
+                                      </a>
+                                    ) : (
+                                      <span>{job.title}</span>
+                                    )}
+                                  </div>
+                                  <div className="text-[11px] text-slate-500 line-clamp-1 mt-0.5">
+                                    {job.employer.displayName}
+                                  </div>
+                                </td>
+
+                                {/* Code */}
+                                <td className="py-2.5 px-3 whitespace-nowrap">
+                                  <span className="font-mono text-xs font-bold px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 border border-slate-200/80 dark:border-slate-700">
+                                    {job.code || "110B0PNNQ1R"}
+                                  </span>
+                                </td>
+
+                                {/* Category */}
+                                <td className="py-2.5 px-3 text-slate-700 dark:text-slate-300 font-medium whitespace-nowrap">
+                                  <span className="px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 text-[11px]">
+                                    {job.industry}
+                                  </span>
+                                </td>
+
+                                {/* City */}
+                                <td className="py-2.5 px-3 text-slate-600 dark:text-slate-300 whitespace-nowrap">
+                                  {job.city || job.district || "Any part of Sri Lanka"}
+                                </td>
+
+                                {/* Views */}
+                                <td className="py-2.5 px-3 text-center font-bold text-slate-800 dark:text-slate-200">
+                                  {job.viewsCount || 0}
+                                </td>
+
+                                {/* Added Date */}
+                                <td className="py-2.5 px-3 text-slate-500 whitespace-nowrap font-mono text-[11px]">
+                                  {job.datePosted ? job.datePosted.replace("T", " ").slice(0, 19) : "2020-12-14 00:40:31"}
+                                </td>
+
+                                {/* Status (iOS ON/OFF toggle switch) */}
+                                <td className="py-2.5 px-3 text-center">
+                                  <button
+                                    type="button"
+                                    role="switch"
+                                    aria-checked={isStatusOn}
+                                    onClick={() => handleToggleJobStatus(job)}
+                                    title={isStatusOn ? "Click to turn OFF" : "Click to turn ON"}
+                                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 ${
+                                      isStatusOn ? "bg-emerald-600" : "bg-slate-300 dark:bg-slate-700"
+                                    }`}
+                                  >
+                                    <span
+                                      className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                        isStatusOn ? "translate-x-5" : "translate-x-0"
+                                      }`}
+                                    />
+                                  </button>
+                                </td>
+
+                                {/* Direct Channels (Hidden by default, toggleable per job) */}
+                                <td className="py-2.5 px-3 text-center">
+                                  <div className="flex items-center justify-center gap-1">
+                                    <button
+                                      onClick={() => handleToggleContactChannel(job, "showWhatsApp")}
+                                      title={`WhatsApp: ${job.showWhatsApp ? "ON (shown on cards)" : "OFF (hidden)"}`}
+                                      className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ${
+                                        job.showWhatsApp
+                                          ? "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-300"
+                                          : "bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800 dark:text-slate-500"
+                                      }`}
+                                    >
+                                      WA
+                                    </button>
+                                    <button
+                                      onClick={() => handleToggleContactChannel(job, "showEmail")}
+                                      title={`Email: ${job.showEmail ? "ON (shown on cards)" : "OFF (hidden)"}`}
+                                      className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ${
+                                        job.showEmail
+                                          ? "bg-blue-100 text-blue-800 border-blue-300 dark:bg-blue-950 dark:text-blue-300"
+                                          : "bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800 dark:text-slate-500"
+                                      }`}
+                                    >
+                                      Mail
+                                    </button>
+                                    <button
+                                      onClick={() => handleToggleContactChannel(job, "showPhone")}
+                                      title={`Phone: ${job.showPhone ? "ON (shown on cards)" : "OFF (hidden)"}`}
+                                      className={`px-2 py-0.5 rounded text-[10px] font-bold border transition-colors ${
+                                        job.showPhone
+                                          ? "bg-purple-100 text-purple-800 border-purple-300 dark:bg-purple-950 dark:text-purple-300"
+                                          : "bg-slate-100 text-slate-400 border-slate-200 dark:bg-slate-800 dark:text-slate-500"
+                                      }`}
+                                    >
+                                      Tel
+                                    </button>
+                                  </div>
+                                </td>
+
+                                {/* Actions (Blue circular edit button matching Image 1) */}
+                                <td className="py-2.5 px-3 text-right">
+                                  <div className="flex items-center justify-end gap-1.5">
+                                    {/* Blue Edit Button matching legacy UI */}
+                                    <button
+                                      onClick={() => {
+                                        setEditingJob(job);
+                                        setIsJobModalOpen(true);
+                                      }}
+                                      title="Edit Job Vacancy"
+                                      className="w-7 h-7 rounded-full bg-blue-600 hover:bg-blue-700 text-white flex items-center justify-center shadow-xs transition-transform active:scale-90"
+                                    >
+                                      <Edit className="w-3.5 h-3.5" />
+                                    </button>
+
+                                    {/* External Link button */}
+                                    {destinationUrl && (
+                                      <a
+                                        href={destinationUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        title="Test destination URL"
+                                        className="w-7 h-7 rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 flex items-center justify-center border border-slate-200 dark:border-slate-700 transition-colors"
+                                      >
+                                        <ExternalLink className="w-3 h-3" />
+                                      </a>
+                                    )}
+
+                                    {/* Delete button */}
+                                    <button
+                                      onClick={() => handleDeleteJob(job.id, job.title)}
+                                      title="Delete Listing"
+                                      className="w-7 h-7 rounded-full bg-rose-50 hover:bg-rose-100 text-rose-600 dark:bg-rose-950/60 flex items-center justify-center border border-rose-200 dark:border-rose-900 transition-colors"
+                                    >
+                                      <Trash2 className="w-3.5 h-3.5" />
+                                    </button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Pagination Controls */}
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500">
+                    <div>
+                      Showing{" "}
+                      <strong className="text-slate-900 dark:text-white">
+                        {filteredJobs.length > 0 ? (currentPage - 1) * pageSize + 1 : 0}
+                      </strong>{" "}
+                      to{" "}
+                      <strong className="text-slate-900 dark:text-white">
+                        {Math.min(currentPage * pageSize, filteredJobs.length)}
+                      </strong>{" "}
+                      of{" "}
+                      <strong className="text-slate-900 dark:text-white">{filteredJobs.length}</strong>{" "}
+                      vacancies
+                    </div>
+
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <button
+                        type="button"
+                        onClick={() => setCurrentPage(1)}
+                        disabled={currentPage === 1}
+                        className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                        title="First Page"
+                      >
+                        «
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                      >
+                        Prev
+                      </button>
+
+                      <div className="px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-950/60 border border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 font-bold">
+                        Page {currentPage} of {totalPages}
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                      >
+                        Next
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setCurrentPage(totalPages)}
+                        disabled={currentPage === totalPages}
+                        className="px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 font-semibold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+                        title="Last Page"
+                      >
+                        »
+                      </button>
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
           </div>
         )}
 
@@ -2353,6 +2472,53 @@ export default function AdminPortalPage() {
                 </div>
                 <div className="text-2xl font-black text-slate-900 dark:text-white mt-1">100%</div>
                 <div className="text-xs text-slate-500 mt-1">Zero unconsented resumes</div>
+              </div>
+            </div>
+
+            {/* Supabase Database Sync Panel */}
+            <div className="p-6 rounded-3xl bg-slate-50 dark:bg-slate-950/70 border border-slate-200 dark:border-slate-800 space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <h4 className="font-extrabold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span>Supabase PostgreSQL Engine & Row Level Security (RLS)</span>
+                  </h4>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Live database persistence for Jobs, Employers, Applications, and Admin Staff RBAC roles.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleSyncDatabase}
+                  disabled={isSyncingDb}
+                  className="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md shadow-emerald-600/20 disabled:opacity-50 transition-all flex items-center gap-2 active:scale-95 shrink-0"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${isSyncingDb ? "animate-spin" : ""}`} />
+                  <span>{isSyncingDb ? "Synchronizing DB..." : "Sync Catalog to Supabase"}</span>
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+                  <div className="text-slate-400 text-[10px] font-bold uppercase">Database Ref</div>
+                  <div className="font-mono font-bold text-slate-900 dark:text-white mt-0.5 truncate">
+                    yviravfjywxsiputejsu
+                  </div>
+                </div>
+                <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+                  <div className="text-slate-400 text-[10px] font-bold uppercase">Region & Engine</div>
+                  <div className="font-semibold text-slate-800 dark:text-slate-200 mt-0.5">
+                    Tokyo (ap-northeast-1) · Postgres 16
+                  </div>
+                </div>
+                <div className="p-3 rounded-xl bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800">
+                  <div className="text-slate-400 text-[10px] font-bold uppercase">Security Mode</div>
+                  <div className="font-semibold text-emerald-600 dark:text-emerald-400 mt-0.5 flex items-center gap-1">
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>Enforced RLS on all 4 tables</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

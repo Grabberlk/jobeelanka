@@ -48,9 +48,9 @@
     "semantic_hash": ""
   },
   "src/app/admin/page.tsx": {
-    "mtime": 1794082950.2604792,
-    "seen": 1794086012.0800018,
-    "ast_hash": "cbcaaf61f0384376a0cc517959179e8c",
+    "mtime": 1794088725.6050801,
+    "seen": 1794089348.8133767,
+    "ast_hash": "b11865f9600dea6d7f74ab1b6071f1ae",
     "semantic_hash": ""
   },
   "src/app/api-docs/page.tsx": {
@@ -66,9 +66,9 @@
     "semantic_hash": ""
   },
   "src/app/api/v1/admin/staff/route.ts": {
-    "mtime": 1794082024.5049272,
-    "seen": 1794086012.0800018,
-    "ast_hash": "4b9fdd06cb95664e935a44499d56c986",
+    "mtime": 1794086366.1481814,
+    "seen": 1794089348.8143766,
+    "ast_hash": "848fcdb49c465b54a3bbba3ce60e5768",
     "semantic_hash": ""
   },
   "src/app/api/v1/applications/[id]/route.ts": {
@@ -174,9 +174,9 @@
     "semantic_hash": ""
   },
   "src/app/layout.tsx": {
-    "mtime": 1793953391.984023,
-    "seen": 1794086012.0800018,
-    "ast_hash": "4fa751bec68626dad53646af3222dd74",
+    "mtime": 1794087996.4985535,
+    "seen": 1794089348.8183773,
+    "ast_hash": "c1a56e2263e7932b5809770f21e607b5",
     "semantic_hash": ""
   },
   "src/app/llms.txt/route.ts": {
@@ -324,9 +324,9 @@
     "semantic_hash": ""
   },
   "src/components/navigation/Navbar.tsx": {
-    "mtime": 1794081956.1044877,
-    "seen": 1794086012.0800018,
-    "ast_hash": "4df71012c18dc1b3a6aea6b634e57c33",
+    "mtime": 1794087949.9292607,
+    "seen": 1794089348.824899,
+    "ast_hash": "a1bf5a9ba01e5ea84f6d2e16657635a0",
     "semantic_hash": ""
   },
   "src/components/ui/avatar.tsx": {
@@ -501,6 +501,18 @@
     "mtime": 1794070021.3886554,
     "seen": 1794086012.0800018,
     "ast_hash": "015d7710d866e4d6129af118de6d30e1",
+    "semantic_hash": ""
+  },
+  "src/app/api/v1/admin/sync-db/route.ts": {
+    "mtime": 1794088967.643394,
+    "seen": 1794089348.8143766,
+    "ast_hash": "d3321fdbecdc1ba86af71e1d607e0312",
+    "semantic_hash": ""
+  },
+  "src/lib/supabase.ts": {
+    "mtime": 1794086173.4499433,
+    "seen": 1794089348.8263714,
+    "ast_hash": "832ed24575e38e8e3a2e925b668ec4e0",
     "semantic_hash": ""
   },
   "pnpm-lock.yaml": {
