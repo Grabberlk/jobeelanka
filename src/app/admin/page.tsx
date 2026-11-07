@@ -39,14 +39,35 @@ import {
   FileText,
   Clock,
   Sparkles,
-  ChevronRight
+  ChevronRight,
+  Lock,
+  LogOut,
+  KeyRound,
+  Eye,
+  EyeOff
 } from "lucide-react";
 import { formatCurrency, formatDateRelative, buildWhatsAppUrl } from "@/lib/utils";
 
 type AdminTab = "JOBS" | "EMPLOYERS" | "FEEDS" | "APPLICANTS" | "QUEUE" | "STAFF" | "SYSTEM";
 
 export default function AdminPortalPage() {
-  const [currentUser, setCurrentUser] = useState<StaffUser>(SEED_ADMIN_AND_STAFF[0]); // Default to Super Admin
+  // Admin Authentication & Session State
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState<boolean>(true);
+  const [loginEmail, setLoginEmail] = useState<string>("");
+  const [loginPassword, setLoginPassword] = useState<string>("");
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [isSubmittingLogin, setIsSubmittingLogin] = useState<boolean>(false);
+  const [authenticatedAdmin, setAuthenticatedAdmin] = useState<{
+    id: string;
+    name: string;
+    email: string;
+    role: string;
+    department: string;
+  } | null>(null);
+
+  const [currentUser, setCurrentUser] = useState<StaffUser>(SEED_ADMIN_AND_STAFF[0]);
   const [activeTab, setActiveTab] = useState<AdminTab>("JOBS");
   const [notification, setNotification] = useState<{ message: string; type: "success" | "error" } | null>(null);
 
@@ -94,6 +115,84 @@ export default function AdminPortalPage() {
     setTimeout(() => setNotification(null), 4000);
   };
 
+  // Authentication Check on Mount
+  const checkAuth = async () => {
+    setIsCheckingAuth(true);
+    try {
+      const res = await fetch("/api/v1/auth/admin");
+      if (res.ok) {
+        const json = await res.json();
+        if (json.authenticated && json.user) {
+          setIsAuthenticated(true);
+          setAuthenticatedAdmin(json.user);
+          const found = SEED_ADMIN_AND_STAFF.find(
+            (u) => u.email.toLowerCase() === json.user.email.toLowerCase()
+          );
+          if (found) setCurrentUser(found);
+          loadAllData();
+          return;
+        }
+      }
+      setIsAuthenticated(false);
+      setAuthenticatedAdmin(null);
+    } catch {
+      setIsAuthenticated(false);
+    } finally {
+      setIsCheckingAuth(false);
+    }
+  };
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoginError(null);
+    setIsSubmittingLogin(true);
+    try {
+      const res = await fetch("/api/v1/auth/admin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: loginEmail.trim(),
+          password: loginPassword,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        setLoginError(data.error || "Authentication failed. Check admin credentials.");
+        setIsSubmittingLogin(false);
+        return;
+      }
+
+      setIsAuthenticated(true);
+      setAuthenticatedAdmin(data.user);
+      const found = SEED_ADMIN_AND_STAFF.find(
+        (u) => u.email.toLowerCase() === data.user.email.toLowerCase()
+      );
+      if (found) setCurrentUser(found);
+      showToast(`Welcome, Super Admin ${data.user.name}`);
+      loadAllData();
+    } catch {
+      setLoginError("Network connection error. Please try again.");
+    } finally {
+      setIsSubmittingLogin(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/v1/auth/admin", { method: "DELETE" });
+    } finally {
+      setIsAuthenticated(false);
+      setAuthenticatedAdmin(null);
+      setLoginPassword("");
+      showToast("Signed out of governance session.");
+    }
+  };
+
   // Fetch all initial data
   const loadAllData = async () => {
     setIsLoading(true);
@@ -116,10 +215,6 @@ export default function AdminPortalPage() {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    loadAllData();
-  }, []);
 
   // ==========================================
   // JOBS CRUD ACTIONS
@@ -513,6 +608,106 @@ export default function AdminPortalPage() {
       e.district.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-4">
+        <div className="w-12 h-12 rounded-2xl border-2 border-emerald-500/20 border-t-emerald-500 animate-spin" />
+        <p className="mt-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
+          Verifying Governance Access...
+        </p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center p-4 sm:p-6 text-white">
+        <div className="w-full max-w-md bg-slate-900/90 border border-slate-800 backdrop-blur-xl rounded-3xl p-7 sm:p-8 shadow-2xl space-y-6">
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 mb-1">
+              <ShieldAlert className="w-7 h-7" />
+            </div>
+            <h1 className="text-2xl font-extrabold tracking-tight">JobeeLanka Back-Office</h1>
+            <p className="text-xs text-slate-400">
+              Restricted governance cockpit for authorized administrators.
+            </p>
+          </div>
+
+          {loginError && (
+            <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-semibold flex items-center gap-2">
+              <AlertTriangle className="w-4 h-4 shrink-0" />
+              <span>{loginError}</span>
+            </div>
+          )}
+
+          <form onSubmit={handleLogin} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+                Admin Email
+              </label>
+              <div className="relative">
+                <input
+                  type="email"
+                  required
+                  value={loginEmail}
+                  onChange={(e) => setLoginEmail(e.target.value)}
+                  placeholder="contactrajeevan@hotmail.com"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-emerald-500 focus:outline-none transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold uppercase text-slate-400 tracking-wider">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  required
+                  value={loginPassword}
+                  onChange={(e) => setLoginPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 text-white text-sm focus:border-emerald-500 focus:outline-none transition-colors pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isSubmittingLogin}
+              className="w-full py-3.5 px-4 rounded-xl font-bold text-sm bg-emerald-600 hover:bg-emerald-500 active:scale-98 text-white shadow-lg shadow-emerald-950/50 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              {isSubmittingLogin ? (
+                <RefreshCw className="w-4 h-4 animate-spin" />
+              ) : (
+                <Lock className="w-4 h-4" />
+              )}
+              <span>{isSubmittingLogin ? "Authenticating..." : "Sign In to Cockpit"}</span>
+            </button>
+          </form>
+
+          <div className="pt-4 border-t border-slate-800/80 text-center">
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-400 hover:text-emerald-400 transition-colors"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span>Return to Public Directory</span>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 py-8 px-4 sm:px-6 lg:px-8 space-y-6">
       {/* Toast Notification */}
@@ -553,38 +748,33 @@ export default function AdminPortalPage() {
             </p>
           </div>
 
-          {/* Active User Persona Switcher */}
-          <div className="bg-slate-800 p-3 rounded-2xl border border-slate-700 flex flex-col sm:flex-row items-start sm:items-center gap-3">
-            <div className="flex items-center gap-2.5">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={currentUser.avatar}
-                alt={currentUser.name}
-                className="w-10 h-10 rounded-xl object-cover border border-slate-600"
-              />
+          {/* Authenticated Super Admin Session & Sign Out */}
+          <div className="bg-slate-800/90 p-3 sm:p-4 rounded-2xl border border-slate-700/80 flex items-center gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-sm shrink-0">
+                {(authenticatedAdmin?.name || currentUser.name).charAt(0).toUpperCase()}
+              </div>
               <div>
-                <div className="text-xs font-bold text-white">{currentUser.name}</div>
-                <div className="text-[10px] text-emerald-400 font-semibold">{currentUser.role}</div>
+                <div className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <span>{authenticatedAdmin?.name || currentUser.name}</span>
+                  <span className="text-[10px] bg-emerald-950 border border-emerald-800/60 text-emerald-300 font-bold px-1.5 py-0.5 rounded-md">
+                    SUPER_ADMIN
+                  </span>
+                </div>
+                <div className="text-[11px] text-slate-400 font-mono">
+                  {authenticatedAdmin?.email || currentUser.email}
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-col gap-1 w-full sm:w-auto">
-              <span className="text-[10px] uppercase font-bold text-slate-400">Switch Persona:</span>
-              <select
-                value={currentUser.id}
-                onChange={(e) => {
-                  const found = SEED_ADMIN_AND_STAFF.find((u) => u.id === e.target.value);
-                  if (found) setCurrentUser(found);
-                }}
-                className="bg-slate-900 text-white border border-slate-700 rounded-lg px-2.5 py-1 text-xs font-semibold focus:outline-none"
-              >
-                {SEED_ADMIN_AND_STAFF.map((staff) => (
-                  <option key={staff.id} value={staff.id}>
-                    {staff.name} ({staff.role === "SUPER_ADMIN" ? "Admin" : "Staff"})
-                  </option>
-                ))}
-              </select>
-            </div>
+            <button
+              onClick={handleLogout}
+              className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/30 transition-colors"
+              title="Sign Out of Administration"
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              <span>Sign Out</span>
+            </button>
           </div>
         </div>
 
@@ -1662,7 +1852,7 @@ export default function AdminPortalPage() {
                 Platform Personnel & Role-Based Access Control
               </h3>
               <p className="text-xs text-slate-500">
-                Seeded 1 Super Administrator and 2 Operational Staff Personas with explicit permission boundaries.
+                Authorized Super Administrators with full system governance and RLS privileges.
               </p>
             </div>
 

@@ -124,11 +124,6 @@ export const Footer: React.FC = () => {
                   Report Expired or Incorrect Listing
                 </Link>
               </li>
-              <li>
-                <Link href="/admin" className="hover:text-emerald-400 transition-colors">
-                  Admin Back-Office
-                </Link>
-              </li>
             </ul>
           </div>
         </div>

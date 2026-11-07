@@ -140,7 +140,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onApplyClick }) => {
         </div>
 
         {/* Mandatory Independence & Trademark Disclaimer on Every Job Posting */}
-        <div className="mb-4 p-2.5 rounded-xl bg-amber-50/70 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/40 text-[11px] text-amber-900/90 dark:text-amber-200/90 leading-relaxed font-normal">
+        <div className="mb-3.5 px-3 py-2 rounded-xl bg-amber-500/10 border-l-3 border-amber-500 text-[11px] text-amber-950/90 dark:text-amber-200/90 leading-relaxed font-normal">
           <span className="font-semibold">&quot;We are independent organisation and not associated with or sponsored by the organisation above, logo is only for information purpose.&quot;</span> Click below to the organisation&apos;s web site.
         </div>
 
