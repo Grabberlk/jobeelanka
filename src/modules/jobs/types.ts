@@ -64,7 +64,9 @@ export interface Job {
   directApplyAllowed: boolean;
   datePosted: string;
   lastCheckedAt?: string;
-  permissionStatus?: "APPROVED" | "PENDING" | "PUBLIC";
+  permissionStatus?: "APPROVED" | "PENDING" | "PUBLIC" | "REJECTED";
+  moderationNote?: string;
+  moderatedAt?: string;
   validThrough: string;
   featured: boolean;
   viewsCount: number;

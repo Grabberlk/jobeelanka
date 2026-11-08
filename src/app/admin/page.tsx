@@ -350,6 +350,13 @@ export default function AdminPortalPage() {
       if (feedsRes.data?.logs) setSyncLogs(feedsRes.data.logs);
       if (appsRes.data) setApplications(appsRes.data);
       if (staffRes.data) setStaffList(staffRes.data);
+      const moderationRes = await fetch("/api/v1/moderation").then((r) => r.json()).catch(() => ({ data: [] }));
+      if (moderationRes.data) {
+        setQueue((prev) => [
+          ...moderationRes.data,
+          ...prev.filter((item) => !String(item.id).startsWith("job-")),
+        ]);
+      }
     } catch (err) {
       console.error("Failed to load admin data:", err);
     } finally {
@@ -665,6 +672,30 @@ export default function AdminPortalPage() {
       }
     } catch (e) {
       showToast("Failed to delete feed", "error");
+    }
+  };
+
+  const handleModerateImportedJob = async (item: ModerationItem, decision: "APPROVE" | "REJECT") => {
+    const jobId = (item as ModerationItem & { jobId?: string }).jobId;
+    if (!jobId) {
+      setQueue((prev) => prev.map((q) => (q.id === item.id ? { ...q, status: decision === "APPROVE" ? "APPROVED" : "FLAGGED" } : q)));
+      return;
+    }
+    try {
+      const res = await fetch("/api/v1/moderation", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ jobId, decision }),
+      });
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        showToast(result.error || "Moderation update failed", "error");
+        return;
+      }
+      setQueue((prev) => prev.filter((q) => q.id !== item.id));
+      showToast(decision === "APPROVE" ? `Approved "${item.entityName}" for publication.` : `Rejected and blocked "${item.entityName}".`);
+    } catch {
+      showToast("Network error updating moderation decision", "error");
     }
   };
 
@@ -2285,23 +2316,15 @@ export default function AdminPortalPage() {
 
                   <div className="flex items-center gap-2">
                     <button
-                      onClick={() =>
-                        setQueue((prev) =>
-                          prev.map((q) => (q.id === item.id ? { ...q, status: "APPROVED" } : q))
-                        )
-                      }
-                      className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center gap-1"
+                      onClick={() => handleModerateImportedJob(item, "APPROVE")}
+                      className="px-3 py-1.5 rounded-xl bg-emerald-600 text-white font-bold text-xs flex items-center gap-1 hover:bg-emerald-700 transition-colors"
                     >
                       <CheckCircle2 className="w-3.5 h-3.5" />
                       <span>Verify & Approve</span>
                     </button>
                     <button
-                      onClick={() =>
-                        setQueue((prev) =>
-                          prev.map((q) => (q.id === item.id ? { ...q, status: "FLAGGED" } : q))
-                        )
-                      }
-                      className="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 text-xs font-bold flex items-center gap-1"
+                      onClick={() => handleModerateImportedJob(item, "REJECT")}
+                      className="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-100 border border-rose-200 text-xs font-bold flex items-center gap-1 transition-colors"
                     >
                       <XCircle className="w-3.5 h-3.5" />
                       <span>Reject / Block</span>
@@ -3116,7 +3139,7 @@ export default function AdminPortalPage() {
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
               <h3 className="font-bold text-lg text-slate-900 dark:text-white flex items-center gap-2">
                 <Rss className="w-5 h-5 text-amber-500" />
-                <span>Add RSS / Lead Source</span>
+                <span>Add Job Website / RSS / API Source</span>
               </h3>
               <button
                 onClick={() => setIsFeedModalOpen(false)}
@@ -3129,7 +3152,7 @@ export default function AdminPortalPage() {
             <form onSubmit={handleCreateFeed} className="space-y-4">
               <div>
                 <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Feed Channel Name *
+                  Source Name *
                 </label>
                 <input
                   type="text"
@@ -3143,14 +3166,14 @@ export default function AdminPortalPage() {
 
               <div>
                 <label className="text-[11px] font-bold text-slate-700 dark:text-slate-300 block mb-1">
-                  Feed URL (RSS 2.0 / XML / Webhook) *
+                  Website, RSS, Atom, or JSON API URL *
                 </label>
                 <input
                   type="url"
                   required
                   value={newFeedData.url}
                   onChange={(e) => setNewFeedData({ ...newFeedData, url: e.target.value })}
-                  placeholder="https://example.com/rss/jobs.xml"
+                  placeholder="https://example.com/careers or /rss/jobs.xml"
                   className="w-full px-3 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none"
                 />
               </div>

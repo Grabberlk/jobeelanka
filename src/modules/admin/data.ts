@@ -63,6 +63,7 @@ export interface ModerationItem {
   status: "PENDING" | "APPROVED" | "FLAGGED" | "REJECTED";
   riskScore: "LOW" | "MEDIUM" | "HIGH";
   notes?: string;
+  jobId?: string;
 }
 
 export const SEED_MODERATION_QUEUE: ModerationItem[] = [
