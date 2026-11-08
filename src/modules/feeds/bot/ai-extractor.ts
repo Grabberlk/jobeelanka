@@ -154,3 +154,4 @@ ${textSample}`;
 
   return extractHeuristicJobs(htmlText, baseUrl, companyName);
 }
+
