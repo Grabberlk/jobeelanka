@@ -1,11 +1,14 @@
+export type SourceTrustLevel = "MANUAL" | "TRUSTED_EMPLOYER" | "PARTNER_FEED" | "HIGH_RISK";
+
 export interface JobFeed {
   id: string;
   name: string;
   url: string;
   category: string;
   district: string;
-  sourceType: "RSS" | "API" | "SCRAPER_LEAD";
+  sourceType: "RSS" | "API" | "SCRAPER_LEAD" | "BOT_DISCOVERED";
   status: "ACTIVE" | "PAUSED" | "ERROR";
+  trustLevel?: SourceTrustLevel;
   lastSyncAt?: string;
   itemsIngestedCount: number;
   autoSyncIntervalMinutes: number;
@@ -23,6 +26,51 @@ export interface FeedSyncLog {
   message: string;
 }
 
+export interface AnalyzedJobPreview {
+  tempId: string;
+  title: string;
+  company: string;
+  companyLogo?: string;
+  location: string;
+  district: string;
+  workMode: "ONSITE" | "HYBRID" | "REMOTE";
+  employmentType: "FULL_TIME" | "PART_TIME" | "CONTRACT" | "INTERNSHIP";
+  industry: string;
+  applyUrl: string;
+  sourceUrl: string;
+  shortSnippet: string;
+  postedDate?: string;
+  closingDate?: string;
+  confidenceScore: number; // 0 - 100
+  detectionStrategy: "RSS_FEED" | "JSON_LD" | "ATS_INTEGRATION" | "ADAPTER_UNDP" | "HTML_DOM" | "AI_ASSISTED";
+  isDuplicate: boolean;
+  duplicateReason?: string;
+  missingFields: string[];
+}
+
+export interface SourceDiscoveryMetadata {
+  detectedFeeds: string[];
+  detectedAtsProvider?: string;
+  hasJsonLd: boolean;
+  pageTitle?: string;
+  resolvedFinalUrl?: string;
+}
+
+export interface AnalysisReport {
+  inputUrl: string;
+  targetDomain: string;
+  strategyUsed: "RSS_FEED" | "JSON_LD" | "ATS_INTEGRATION" | "ADAPTER_UNDP" | "HTML_DOM" | "AI_ASSISTED" | "NONE";
+  overallConfidence: number;
+  totalFound: number;
+  validApplicationLinksCount: number;
+  duplicateCount: number;
+  incompleteCount: number;
+  trustLevel: SourceTrustLevel;
+  discoveryMetadata: SourceDiscoveryMetadata;
+  jobs: AnalyzedJobPreview[];
+  recommendedAction: string;
+}
+
 export const PRECONFIGURED_FEEDS: JobFeed[] = [
   {
     id: "feed-itpro-all",
@@ -32,6 +80,7 @@ export const PRECONFIGURED_FEEDS: JobFeed[] = [
     district: "Colombo",
     sourceType: "RSS",
     status: "ACTIVE",
+    trustLevel: "PARTNER_FEED",
     lastSyncAt: "2026-11-06T02:00:00Z",
     itemsIngestedCount: 42,
     autoSyncIntervalMinutes: 60,
@@ -44,6 +93,7 @@ export const PRECONFIGURED_FEEDS: JobFeed[] = [
     district: "Colombo",
     sourceType: "RSS",
     status: "ACTIVE",
+    trustLevel: "PARTNER_FEED",
     lastSyncAt: "2026-11-06T02:30:00Z",
     itemsIngestedCount: 18,
     autoSyncIntervalMinutes: 60,
@@ -56,6 +106,7 @@ export const PRECONFIGURED_FEEDS: JobFeed[] = [
     district: "Colombo",
     sourceType: "RSS",
     status: "ACTIVE",
+    trustLevel: "TRUSTED_EMPLOYER",
     lastSyncAt: "2026-11-05T20:00:00Z",
     itemsIngestedCount: 65,
     autoSyncIntervalMinutes: 120,
@@ -68,9 +119,9 @@ export const PRECONFIGURED_FEEDS: JobFeed[] = [
     district: "Gampaha",
     sourceType: "SCRAPER_LEAD",
     status: "ACTIVE",
+    trustLevel: "MANUAL",
     lastSyncAt: "2026-11-06T00:15:00Z",
     itemsIngestedCount: 29,
     autoSyncIntervalMinutes: 180,
   },
 ];
-

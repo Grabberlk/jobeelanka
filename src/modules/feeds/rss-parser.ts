@@ -129,7 +129,7 @@ function findArray(value: unknown): unknown[] {
   return [];
 }
 
-function parseJsonJobs(body: string, baseUrl: string): ParsedRssItem[] {
+export function parseJsonJobs(body: string, baseUrl: string): ParsedRssItem[] {
   let parsed: unknown;
   try {
     parsed = JSON.parse(body);
@@ -160,7 +160,7 @@ function parseJsonJobs(body: string, baseUrl: string): ParsedRssItem[] {
   });
 }
 
-function parseJsonLdJobs(body: string, baseUrl: string): ParsedRssItem[] {
+export function parseJsonLdJobs(body: string, baseUrl: string): ParsedRssItem[] {
   const scripts = body.match(/<script[^>]+type=["']application\/ld\+json["'][^>]*>[\s\S]*?<\/script>/gi) || [];
   const output: ParsedRssItem[] = [];
 

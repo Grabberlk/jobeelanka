@@ -9,7 +9,7 @@ import {
   ModerationItem,
 } from "@/modules/admin/data";
 import { Job, Employer, ApplicationSubmission } from "@/modules/jobs/types";
-import { JobFeed, FeedSyncLog } from "@/modules/feeds/types";
+import { JobFeed, FeedSyncLog, AnalysisReport, AnalyzedJobPreview } from "@/modules/feeds/types";
 import {
   ShieldAlert,
   ShieldCheck,
@@ -49,7 +49,12 @@ import {
   X,
   UserPlus,
   Sun,
-  Moon
+  Moon,
+  Bot,
+  CheckSquare,
+  Square,
+  Zap,
+  Globe2,
 } from "lucide-react";
 import { formatCurrency, formatDateRelative, buildWhatsAppUrl } from "@/lib/utils";
 
@@ -131,6 +136,14 @@ export default function AdminPortalPage() {
   const [applications, setApplications] = useState<ApplicationSubmission[]>([]);
   const [queue, setQueue] = useState<ModerationItem[]>(SEED_MODERATION_QUEUE);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // JobeeBot Ingestion & Discovery State
+  const [isBotModalOpen, setIsBotModalOpen] = useState(false);
+  const [botUrl, setBotUrl] = useState("");
+  const [isAnalyzingBot, setIsAnalyzingBot] = useState(false);
+  const [botReport, setBotReport] = useState<AnalysisReport | null>(null);
+  const [selectedBotJobIds, setSelectedBotJobIds] = useState<string[]>([]);
+  const [isImportingBotJobs, setIsImportingBotJobs] = useState(false);
 
   // Search & Filter
   const [searchQuery, setSearchQuery] = useState("");
@@ -699,6 +712,72 @@ export default function AdminPortalPage() {
     }
   };
 
+  const handleAnalyzeSourceUrl = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!botUrl || !botUrl.startsWith("http")) {
+      showToast("Please enter a valid HTTP/HTTPS URL", "error");
+      return;
+    }
+    setIsAnalyzingBot(true);
+    setBotReport(null);
+    try {
+      const res = await fetch("/api/v1/admin/analyze-source", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url: botUrl }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        showToast(data.error || "Analysis failed", "error");
+        return;
+      }
+      setBotReport(data.data);
+      const nonDupes = (data.data.jobs || [])
+        .filter((j: AnalyzedJobPreview) => !j.isDuplicate)
+        .map((j: AnalyzedJobPreview) => j.tempId);
+      setSelectedBotJobIds(nonDupes);
+      showToast(`Analysis complete: found ${data.data.totalFound} listings.`);
+    } catch {
+      showToast("Network error analyzing website", "error");
+    } finally {
+      setIsAnalyzingBot(false);
+    }
+  };
+
+  const handleImportSelectedBotJobs = async () => {
+    if (!botReport || selectedBotJobIds.length === 0) {
+      showToast("No jobs selected to import", "error");
+      return;
+    }
+    const chosen = botReport.jobs.filter((j) => selectedBotJobIds.includes(j.tempId));
+    setIsImportingBotJobs(true);
+    try {
+      const res = await fetch("/api/v1/admin/import-pending", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          jobs: chosen,
+          sourceName: botReport.targetDomain,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        showToast(data.error || "Failed to import jobs", "error");
+        return;
+      }
+      showToast(`Imported ${data.count} jobs into Moderation Queue as PENDING.`);
+      setIsBotModalOpen(false);
+      setBotReport(null);
+      setBotUrl("");
+      loadAllData();
+      setActiveTab("QUEUE");
+    } catch {
+      showToast("Network error importing jobs", "error");
+    } finally {
+      setIsImportingBotJobs(false);
+    }
+  };
+
   // ==========================================
   // APPLICANTS CRM ACTIONS
   // ==========================================
@@ -1252,6 +1331,13 @@ export default function AdminPortalPage() {
 
             {activeTab === "FEEDS" && (
               <>
+                <button
+                  onClick={() => setIsBotModalOpen(true)}
+                  className="px-4 py-2 text-xs font-bold rounded-xl bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md flex items-center gap-1.5 transition-all active:scale-95"
+                >
+                  <Bot className="w-4 h-4 text-emerald-200" />
+                  <span>Analyze Website (JobeeBot)</span>
+                </button>
                 <button
                   onClick={() => {
                     if (feeds.length > 0) handleSyncFeedNow(feeds[0].id, feeds[0].name);
@@ -2002,13 +2088,22 @@ export default function AdminPortalPage() {
                 </p>
               </div>
 
-              <button
-                onClick={() => setIsFeedModalOpen(true)}
-                className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-amber-600/20"
-              >
-                <Plus className="w-4 h-4" />
-                <span>Add RSS Lead Source</span>
-              </button>
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  onClick={() => setIsBotModalOpen(true)}
+                  className="px-4 py-2.5 rounded-xl bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all"
+                >
+                  <Bot className="w-4 h-4 text-emerald-200" />
+                  <span>Analyze Website (JobeeBot)</span>
+                </button>
+                <button
+                  onClick={() => setIsFeedModalOpen(true)}
+                  className="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-amber-600/20"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Add Lead Source</span>
+                </button>
+              </div>
             </div>
 
             {/* Feeds Grid */}
@@ -3126,6 +3221,267 @@ export default function AdminPortalPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          MODAL: JOBEEBOT DISCOVERY & DRY-RUN ANALYZER
+      ========================================================================= */}
+      {isBotModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/75 backdrop-blur-md flex items-center justify-center p-3 sm:p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-3xl max-w-4xl w-full p-5 sm:p-7 border border-slate-200 dark:border-slate-800 shadow-2xl space-y-6 my-auto max-h-[90vh] flex flex-col">
+            {/* Modal Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-linear-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+                  <Bot className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-base sm:text-lg text-slate-900 dark:text-white flex items-center gap-2">
+                    <span>JobeeBot Source Discovery & Analyzer</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950 text-emerald-600 border border-emerald-200 dark:border-emerald-800">
+                      Dry-Run Mode
+                    </span>
+                  </h3>
+                  <p className="text-xs text-slate-500 dark:text-slate-400">
+                    Paste any company website, career page, RSS feed, or vacancy portal to inspect before saving.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setIsBotModalOpen(false);
+                  setBotReport(null);
+                }}
+                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 text-lg font-bold p-1 rounded-lg"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* URL Input Form */}
+            <form onSubmit={handleAnalyzeSourceUrl} className="shrink-0 space-y-2">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                <div className="relative flex-1">
+                  <Globe2 className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                  <input
+                    type="url"
+                    required
+                    value={botUrl}
+                    onChange={(e) => setBotUrl(e.target.value)}
+                    placeholder="e.g. https://jobs.undp.org/cj_view_jobs.cfm or https://itpro.lk/rss/all/"
+                    className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-xs text-slate-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={isAnalyzingBot}
+                  className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md shadow-emerald-600/20 shrink-0 transition-all active:scale-95"
+                >
+                  {isAnalyzingBot ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Analyzing Source...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="w-3.5 h-3.5" />
+                      <span>Analyze Website</span>
+                    </>
+                  )}
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-400 flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
+                <span>Zero DB writes: detects RSS/Atom, JSON-LD, Workday/Oracle embeds, UNDP tables & AI card parsing.</span>
+              </p>
+            </form>
+
+            {/* Analysis Results View */}
+            {botReport && (
+              <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+                {/* Meta Summary Cards */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Total Found</span>
+                    <span className="text-xl font-extrabold text-slate-900 dark:text-white">{botReport.totalFound}</span>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200/60 dark:border-emerald-800/60">
+                    <span className="text-[10px] font-bold text-emerald-600 uppercase tracking-wider block">Valid Links</span>
+                    <span className="text-xl font-extrabold text-emerald-700 dark:text-emerald-400">{botReport.validApplicationLinksCount}</span>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200/60 dark:border-amber-800/60">
+                    <span className="text-[10px] font-bold text-amber-600 uppercase tracking-wider block">Existing Duplicates</span>
+                    <span className="text-xl font-extrabold text-amber-700 dark:text-amber-400">{botReport.duplicateCount}</span>
+                  </div>
+                  <div className="p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Confidence</span>
+                    <span className="text-xl font-extrabold text-slate-900 dark:text-white">{botReport.overallConfidence}%</span>
+                  </div>
+                </div>
+
+                {/* Strategy & Discovery Badge Row */}
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold flex items-center gap-1.5">
+                    <Zap className="w-3.5 h-3.5 text-amber-500" />
+                    <span>Strategy: <strong>{botReport.strategyUsed}</strong></span>
+                  </span>
+                  <span className="px-2.5 py-1 rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold">
+                    Trust: <strong>{botReport.trustLevel}</strong>
+                  </span>
+                  {botReport.discoveryMetadata.detectedAtsProvider && (
+                    <span className="px-2.5 py-1 rounded-lg bg-blue-50 dark:bg-blue-950 text-blue-700 dark:text-blue-300 font-semibold">
+                      ATS: {botReport.discoveryMetadata.detectedAtsProvider}
+                    </span>
+                  )}
+                  {botReport.discoveryMetadata.detectedFeeds.length > 0 && (
+                    <span className="px-2.5 py-1 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-700 dark:text-amber-300 font-semibold">
+                      {botReport.discoveryMetadata.detectedFeeds.length} RSS feed(s) discovered
+                    </span>
+                  )}
+                </div>
+
+                {/* Recommendation Banner */}
+                <div className="p-3 rounded-xl bg-slate-100 dark:bg-slate-800/80 text-xs text-slate-600 dark:text-slate-300 flex items-start gap-2">
+                  <AlertTriangle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                  <span>{botReport.recommendedAction}</span>
+                </div>
+
+                {/* Table of Discovered Jobs */}
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-700 dark:text-slate-300">
+                      Discovered Vacancies ({selectedBotJobIds.length} of {botReport.jobs.length} selected for staging)
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (selectedBotJobIds.length === botReport.jobs.length) {
+                          setSelectedBotJobIds([]);
+                        } else {
+                          setSelectedBotJobIds(botReport.jobs.map((j) => j.tempId));
+                        }
+                      }}
+                      className="text-emerald-600 hover:underline font-bold text-[11px]"
+                    >
+                      {selectedBotJobIds.length === botReport.jobs.length ? "Deselect All" : "Select All"}
+                    </button>
+                  </div>
+
+                  <div className="border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden max-h-60 overflow-y-auto">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 dark:bg-slate-800 text-slate-500 text-[10px] uppercase font-bold sticky top-0 z-10">
+                        <tr>
+                          <th className="p-2.5 w-8"></th>
+                          <th className="p-2.5">Title & Company</th>
+                          <th className="p-2.5">Location</th>
+                          <th className="p-2.5">Apply Link</th>
+                          <th className="p-2.5">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                        {botReport.jobs.map((job) => {
+                          const isSelected = selectedBotJobIds.includes(job.tempId);
+                          return (
+                            <tr
+                              key={job.tempId}
+                              className={`hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors ${
+                                job.isDuplicate ? "opacity-60 bg-amber-50/20" : ""
+                              }`}
+                            >
+                              <td className="p-2.5 text-center">
+                                <input
+                                  type="checkbox"
+                                  checked={isSelected}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedBotJobIds([...selectedBotJobIds, job.tempId]);
+                                    } else {
+                                      setSelectedBotJobIds(selectedBotJobIds.filter((id) => id !== job.tempId));
+                                    }
+                                  }}
+                                  className="rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                                />
+                              </td>
+                              <td className="p-2.5">
+                                <div className="font-bold text-slate-900 dark:text-white line-clamp-1">{job.title}</div>
+                                <div className="text-[11px] text-slate-400">{job.company}</div>
+                              </td>
+                              <td className="p-2.5 text-slate-600 dark:text-slate-400 whitespace-nowrap">
+                                <div>{job.location}</div>
+                                <span className="text-[10px] font-mono uppercase text-slate-400">{job.workMode}</span>
+                              </td>
+                              <td className="p-2.5">
+                                <a
+                                  href={job.applyUrl}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="text-emerald-600 hover:underline flex items-center gap-1 font-mono text-[11px] max-w-[200px] truncate"
+                                >
+                                  <span className="truncate">{job.applyUrl}</span>
+                                  <ExternalLink className="w-3 h-3 shrink-0" />
+                                </a>
+                              </td>
+                              <td className="p-2.5 whitespace-nowrap">
+                                {job.isDuplicate ? (
+                                  <span className="px-2 py-0.5 rounded-full bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-300 text-[10px] font-bold">
+                                    Duplicate
+                                  </span>
+                                ) : (
+                                  <span className="px-2 py-0.5 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 text-[10px] font-bold">
+                                    New Lead
+                                  </span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Modal Actions */}
+            <div className="flex items-center justify-between pt-4 border-t border-slate-100 dark:border-slate-800 shrink-0">
+              <span className="text-xs text-slate-400">
+                {botReport ? `${botReport.jobs.length} total vacancies detected` : "Awaiting URL analysis..."}
+              </span>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsBotModalOpen(false);
+                    setBotReport(null);
+                  }}
+                  className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 text-xs font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
+                  Close
+                </button>
+                {botReport && botReport.jobs.length > 0 && (
+                  <button
+                    type="button"
+                    disabled={selectedBotJobIds.length === 0 || isImportingBotJobs}
+                    onClick={handleImportSelectedBotJobs}
+                    className="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs shadow-md flex items-center gap-1.5 transition-all"
+                  >
+                    {isImportingBotJobs ? (
+                      <>
+                        <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                        <span>Staging to DB...</span>
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-3.5 h-3.5" />
+                        <span>Import {selectedBotJobIds.length} as Pending</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
