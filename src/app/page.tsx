@@ -13,12 +13,12 @@ export default function HomePage() {
       ========================================================================= */}
       <section className="bg-emerald-50/80 dark:bg-emerald-950/40 border border-emerald-200/80 dark:border-emerald-800/60 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs shadow-xs">
         <div className="space-y-1">
-          <p className="font-extrabold text-emerald-900 dark:text-emerald-200 flex items-center gap-2">
+          <p className="font-extrabold text-emerald-950 dark:text-emerald-200 flex items-center gap-2">
             <ShieldCheck className="w-4 h-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
             <span>JobeeLanka — Curated Sri Lanka Job & Vacancy Directory</span>
           </p>
-          <p className="text-slate-600 dark:text-slate-300">
-            Browse verified vacancies across Sri Lanka. When you click <strong>Apply Now</strong> or any job, you are taken directly to the official employer careers portal or vacancy destination.
+          <p className="text-slate-700 dark:text-slate-300 leading-relaxed">
+            Browse verified vacancies across Sri Lanka. When you click <strong>Apply Now</strong> or any vacancy title, you are taken directly to the official employer careers portal or vacancy destination.
           </p>
         </div>
         <Link

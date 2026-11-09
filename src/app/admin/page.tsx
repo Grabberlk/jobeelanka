@@ -1333,7 +1333,7 @@ export default function AdminPortalPage() {
               <>
                 <button
                   onClick={() => setIsBotModalOpen(true)}
-                  className="px-4 py-2 text-xs font-bold rounded-xl bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md flex items-center gap-1.5 transition-all active:scale-95"
+                  className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-md flex items-center gap-1.5 transition-all active:scale-95"
                 >
                   <Bot className="w-4 h-4 text-emerald-200" />
                   <span>Analyze Website (JobeeBot)</span>
@@ -2091,7 +2091,7 @@ export default function AdminPortalPage() {
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   onClick={() => setIsBotModalOpen(true)}
-                  className="px-4 py-2.5 rounded-xl bg-linear-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all"
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-600/20 active:scale-95 transition-all"
                 >
                   <Bot className="w-4 h-4 text-emerald-200" />
                   <span>Analyze Website (JobeeBot)</span>
@@ -3234,7 +3234,7 @@ export default function AdminPortalPage() {
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800 shrink-0">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-2xl bg-linear-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center text-white shadow-md shadow-emerald-500/20">
                   <Bot className="w-5 h-5" />
                 </div>
                 <div>

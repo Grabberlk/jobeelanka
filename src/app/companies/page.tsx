@@ -24,16 +24,18 @@ export default function CompaniesPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
       {/* Header Banner */}
-      <div className="relative overflow-hidden rounded-3xl border border-emerald-500/20 bg-linear-to-br from-slate-900 via-slate-900 to-slate-950 p-6 sm:p-10 text-white shadow-xl space-y-3">
+      <div className="relative overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 sm:p-10 shadow-sm transition-colors space-y-3">
         <div className="absolute -right-20 -top-20 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="relative flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-          <ShieldCheck className="w-4 h-4" />
-          <span>Verified Organization Roster</span>
+        <div className="relative flex items-center gap-2 text-emerald-700 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
+          <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-500/30">
+            <ShieldCheck className="w-3.5 h-3.5" />
+            <span>Verified Organization Roster</span>
+          </span>
         </div>
-        <h1 className="relative text-2xl sm:text-4xl font-extrabold tracking-tight">
+        <h1 className="relative text-2xl sm:text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight">
           Verified Employers & Recruitment Agencies in Sri Lanka
         </h1>
-        <p className="relative text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+        <p className="relative text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
           Every company listed on JobeeLanka is verified through corporate domain authentication, business registration (BR), or the Sri Lanka Bureau of Foreign Employment (SLBFE).
         </p>
       </div>

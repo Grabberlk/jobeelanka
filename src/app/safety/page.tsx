@@ -21,15 +21,17 @@ export default function SafetyPage() {
         </Link>
 
         {/* Header Banner */}
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-950 via-slate-900 to-slate-950 text-white p-6 sm:p-10 border border-emerald-800/40 shadow-xl space-y-4">
-          <div className="flex items-center gap-2 text-emerald-400 text-xs font-bold uppercase tracking-wider">
-            <ShieldCheck className="w-4 h-4" />
-            <span>Statutory Protection & Worker Safety</span>
+        <div className="relative overflow-hidden rounded-3xl bg-white dark:bg-slate-900 text-slate-900 dark:text-white p-6 sm:p-10 border border-slate-200 dark:border-slate-800 shadow-sm space-y-4">
+          <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider">
+            <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 dark:bg-emerald-950/80 border border-emerald-200 dark:border-emerald-500/30">
+              <ShieldCheck className="w-3.5 h-3.5" />
+              <span>Statutory Protection & Worker Safety</span>
+            </span>
           </div>
           <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight">
             Overseas Recruitment Safety & SLBFE Verification
           </h1>
-          <p className="text-xs sm:text-sm text-slate-300 max-w-2xl leading-relaxed">
+          <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 max-w-2xl leading-relaxed">
             Guidance from the Sri Lanka Bureau of Foreign Employment (SLBFE) to safeguard Sri Lankan migrant workers and professionals from predatory recruitment scams.
           </p>
         </div>

@@ -8,11 +8,10 @@ export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState<boolean>(true);
 
-  // Synchronize theme with document & localStorage
+  // Synchronize theme with document & localStorage (default to light if unset)
   useEffect(() => {
-    const isDark =
-      document.documentElement.classList.contains("dark") ||
-      localStorage.getItem("jobeelanka-theme") !== "light";
+    const saved = localStorage.getItem("jobeelanka-theme");
+    const isDark = saved ? saved === "dark" : false;
     setIsDarkMode(isDark);
     if (isDark) {
       document.documentElement.classList.add("dark");
@@ -94,7 +93,7 @@ export const Navbar: React.FC = () => {
 
             <Link
               href="/jobs"
-              className="flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-emerald-600 dark:hover:bg-emerald-500 hover:text-white dark:hover:text-white transition-all shadow-sm active:scale-95"
+              className="flex items-center gap-2 px-4 py-2 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white transition-all shadow-xs active:scale-95"
             >
               <Briefcase className="w-3.5 h-3.5" />
               <span>Browse 1,420+ Jobs</span>

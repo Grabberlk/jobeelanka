@@ -247,7 +247,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onApplyClick }) => {
               target="_blank"
               rel="noopener noreferrer"
               onClick={() => onApplyClick && onApplyClick(job)}
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 font-bold text-xs rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-emerald-600 dark:hover:bg-emerald-400 dark:hover:text-slate-950 shadow-sm active:scale-95 transition-all"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 font-bold text-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs active:scale-95 transition-all"
             >
               <span>Apply Now</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
@@ -255,7 +255,7 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onApplyClick }) => {
           ) : (
             <Link
               href={`/jobs/${job.slug}`}
-              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 font-bold text-xs rounded-xl bg-slate-900 dark:bg-white text-white dark:text-slate-900 hover:bg-emerald-600 dark:hover:bg-emerald-400 dark:hover:text-slate-950 shadow-sm transition-all"
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 font-bold text-xs rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white shadow-xs transition-all"
             >
               <span>View Details</span>
               <ArrowUpRight className="w-3.5 h-3.5" />
