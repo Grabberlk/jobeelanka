@@ -1,0 +1,14 @@
+name: Automated JobeeLanka Feed Sync
+
+on:
+  schedule:
+    - cron: "*/30 * * * *" # Every 30 minutes
+  workflow_dispatch: # Allows manual trigger from GitHub Actions tab
+
+jobs:
+  sync-feeds:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger JobeeLanka Ingestion Cron
+        run: |
+          curl -s -f -X GET "https://jobeelanka.vercel.app/api/cron/feeds" || echo "Cron triggered"
