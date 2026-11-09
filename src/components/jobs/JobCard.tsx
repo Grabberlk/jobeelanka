@@ -129,11 +129,26 @@ export const JobCard: React.FC<JobCardProps> = ({ job, onApplyClick }) => {
 
         {/* Title & Snippet */}
         <div className="mb-3">
-          <Link href={`/jobs/${job.slug}`} className="group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
-            <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-snug line-clamp-2">
-              {job.title}
-            </h3>
-          </Link>
+          {applyUrl ? (
+            <a
+              href={applyUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => onApplyClick && onApplyClick(job)}
+              className="group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors inline-block"
+            >
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-snug line-clamp-2 flex items-center gap-1.5">
+                <span>{job.title}</span>
+                <ArrowUpRight className="w-4 h-4 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all shrink-0 text-emerald-600 dark:text-emerald-400" />
+              </h3>
+            </a>
+          ) : (
+            <Link href={`/jobs/${job.slug}`} className="group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">
+              <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-white leading-snug line-clamp-2">
+                {job.title}
+              </h3>
+            </Link>
+          )}
           <p className="text-xs sm:text-sm text-slate-600 dark:text-slate-300 line-clamp-2 mt-1.5 leading-relaxed">
             {job.shortSnippet}
           </p>

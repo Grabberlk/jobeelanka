@@ -327,3 +327,20 @@ export async function moderateJob(id: string, decision: "APPROVE" | "REJECT", no
   if (error) throw new Error(`Could not update moderation status: ${error.message}`);
   return data;
 }
+
+export async function archiveExpiredDatabaseJobs(): Promise<number> {
+  const client = getSupabaseAdminClient();
+  if (!client) return 0;
+  const now = new Date().toISOString();
+  const { data, error } = await client
+    .from("jobs")
+    .update({ status: "INACTIVE", updated_at: now })
+    .eq("status", "ACTIVE")
+    .lt("valid_through", now)
+    .select("id");
+  if (error) {
+    console.warn("Could not archive expired jobs in database:", error.message);
+    return 0;
+  }
+  return data?.length || 0;
+}

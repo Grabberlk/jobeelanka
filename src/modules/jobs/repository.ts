@@ -416,4 +416,16 @@ export const JobRepository = {
   getAllApplications(): ApplicationSubmission[] {
     return applicationsStore;
   },
+
+  archiveExpiredJobs(): number {
+    const now = new Date().toISOString();
+    let count = 0;
+    for (const job of jobsStore) {
+      if (job.status === "ACTIVE" && job.validThrough && job.validThrough < now) {
+        job.status = "INACTIVE";
+        count++;
+      }
+    }
+    return count;
+  },
 };

@@ -1,5 +1,6 @@
 import { Job, Employer } from "../jobs/types";
 import { JobFeed, FeedSyncLog, PRECONFIGURED_FEEDS } from "./types";
+import { UndpAdapter } from "./bot/adapters/undp-adapter";
 
 let feedsStore: JobFeed[] = [...PRECONFIGURED_FEEDS];
 let syncLogsStore: FeedSyncLog[] = [
@@ -225,6 +226,22 @@ async function fetchSourceItems(feed: JobFeed): Promise<ParsedRssItem[]> {
     const jsonLdItems = parseJsonLdJobs(body, feed.url);
     if (jsonLdItems.length) return jsonLdItems;
 
+    if (UndpAdapter.canHandle(feed.url, body)) {
+      const undpJobs = UndpAdapter.parse(body, feed.url);
+      if (undpJobs.length) {
+        return undpJobs.map((u) => ({
+          title: u.title,
+          link: u.applyUrl,
+          description: u.shortSnippet || u.title,
+          pubDate: u.postedDate || new Date().toISOString(),
+          category: u.industry || "UN Missions in Sri Lanka",
+          company: u.company || "UNDP",
+          location: u.district || u.location || "Colombo",
+          applyUrl: u.applyUrl,
+        }));
+      }
+    }
+
     throw new Error("No supported RSS, Atom, JSON API, or JobPosting JSON-LD records were found");
   } finally {
     clearTimeout(timeout);
@@ -334,6 +351,13 @@ export const FeedIngestionService = {
       const applyUrl = item.applyUrl || item.link || feed.url;
       const cleanDescription = item.description || `Vacancy imported from ${feed.name}.`;
       const slugBase = item.title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+      const shouldAutoPublish = Boolean(
+        feed.autoPublish &&
+        (feed.trustLevel === "TRUSTED_EMPLOYER" || feed.trustLevel === "PARTNER_FEED")
+      );
+      const status = shouldAutoPublish ? "ACTIVE" : "INACTIVE";
+      const permissionStatus = shouldAutoPublish ? "APPROVED" : "PENDING";
+
       const job: Job = {
         id: `feed-job-${Date.now()}-${newJobs.length}`,
         code: `FEED-${Date.now().toString(36).toUpperCase()}-${newJobs.length}`,
@@ -341,7 +365,7 @@ export const FeedIngestionService = {
         title: item.title,
         employer,
         listingType: "partner_feed",
-        status: "INACTIVE",
+        status,
         industry: item.category || feed.category || "Information Technology",
         shortSnippet: cleanDescription.slice(0, 240),
         descriptionHtml: `<p>${cleanDescription.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</p>`,
@@ -362,7 +386,7 @@ export const FeedIngestionService = {
         applyUrl,
         applicationUrl: applyUrl,
         directApplyAllowed: true,
-        permissionStatus: "PENDING",
+        permissionStatus,
         datePosted: item.pubDate || new Date().toISOString(),
         lastCheckedAt: new Date().toISOString(),
         validThrough: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),

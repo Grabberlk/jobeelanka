@@ -80,4 +80,13 @@ test("Live Port 3001 Server Integration Suite", async (t) => {
     assert.ok(res.text.includes("We are independent organisation and not associated with or sponsored by the organisation above"));
     assert.ok(res.text.includes("0094701781816"), "Should reveal contact phone/WhatsApp");
   });
+
+  await t.test("GET /api/v1/jobs/[id]/apply redirects with 307 to apply destination", async () => {
+    const res = await fetch("http://localhost:3001/api/v1/jobs/job-1/apply", {
+      redirect: "manual",
+    });
+    assert.equal(res.status, 307);
+    const location = res.headers.get("location");
+    assert.ok(location, "Redirect location header must be present");
+  });
 });
