@@ -116,4 +116,50 @@ test("JobeeBot Source Discovery & Extraction Suite", async (t) => {
       throw e;
     }
   });
+
+  await t.test("GET /api/v1/admin/source-candidates returns candidates list", async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/api/v1/admin/source-candidates`, {
+        headers: {
+          Cookie: adminCookie,
+        },
+      });
+      assert.equal(res.status, 200);
+      const json = await res.json();
+      assert.equal(json.success, true);
+      assert.ok(Array.isArray(json.data));
+    } catch (e) {
+      if (e.code === "ECONNREFUSED") return;
+      throw e;
+    }
+  });
+
+  await t.test("POST /api/v1/admin/source-candidates registers selected candidates", async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/api/v1/admin/source-candidates`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Cookie: adminCookie,
+        },
+        body: JSON.stringify({
+          candidates: [
+            {
+              url: "https://example.com/careers",
+              name: "Test Candidate",
+              category: "Information Technology",
+              district: "Colombo",
+            },
+          ],
+        }),
+      });
+      assert.equal(res.status, 200);
+      const json = await res.json();
+      assert.equal(json.success, true);
+      assert.equal(json.count, 1);
+    } catch (e) {
+      if (e.code === "ECONNREFUSED") return;
+      throw e;
+    }
+  });
 });

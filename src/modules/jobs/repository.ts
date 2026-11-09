@@ -219,6 +219,12 @@ export const JobRepository = {
     jobsStore = [...newJobs, ...jobsStore];
   },
 
+  hydrateJobs(persistedJobs: Job[]) {
+    const byId = new Map(jobsStore.map((job) => [job.id, job]));
+    for (const job of persistedJobs) byId.set(job.id, job);
+    jobsStore = Array.from(byId.values());
+  },
+
   searchJobs(filters: SearchFacetFilters): {
     jobs: Job[];
     total: number;

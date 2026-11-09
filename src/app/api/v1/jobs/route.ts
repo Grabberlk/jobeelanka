@@ -1,8 +1,27 @@
 import { NextRequest, NextResponse } from "next/server";
 import { JobRepository } from "@/modules/jobs/repository";
 import { WorkMode, EmploymentType } from "@/modules/jobs/types";
+import { loadPersistentJobs } from "@/modules/feeds/persistence";
+
+let isHydrated = false;
+
+async function ensureHydrated() {
+  if (isHydrated) return;
+  try {
+    const dbJobs = await loadPersistentJobs(true);
+    if (dbJobs && dbJobs.length > 0) {
+      JobRepository.hydrateJobs(dbJobs);
+    }
+  } catch {
+    // Memory store remains authoritative if Supabase is offline
+  } finally {
+    isHydrated = true;
+  }
+}
 
 export async function GET(request: NextRequest) {
+  await ensureHydrated();
+
   const { searchParams } = new URL(request.url);
 
   const query = searchParams.get("query") || undefined;
@@ -49,16 +68,15 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        message: "Job vacancy published successfully",
+        message: "Job vacancy created successfully",
         data: newJob,
       },
       { status: 201 }
     );
-  } catch (error) {
+  } catch {
     return NextResponse.json(
-      { success: false, error: "Invalid payload" },
+      { success: false, error: "Failed to create job vacancy" },
       { status: 500 }
     );
   }
 }
-

@@ -9,6 +9,9 @@ export interface JobFeed {
   sourceType: "RSS" | "API" | "SCRAPER_LEAD" | "BOT_DISCOVERED";
   status: "ACTIVE" | "PAUSED" | "ERROR";
   trustLevel?: SourceTrustLevel;
+  autoPublish?: boolean;
+  lastDiscoveryAt?: string;
+  lastDiscoveryStatus?: string;
   lastSyncAt?: string;
   itemsIngestedCount: number;
   autoSyncIntervalMinutes: number;
